@@ -1,0 +1,1 @@
+Trigger sync file of /data/system/package-restrictions.xml
