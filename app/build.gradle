@@ -1,5 +1,9 @@
 apply plugin: 'com.android.application'
 
+dependencies {
+    compile 'com.facebook.fresco:fresco:0.13.0'
+}
+
 android {
     compileSdkVersion 24
     buildToolsVersion "24.0.1"
