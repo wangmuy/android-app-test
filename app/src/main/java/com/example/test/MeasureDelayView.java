@@ -61,12 +61,16 @@ public class MeasureDelayView extends View {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         Log.d(TAG, "onMeasure");
-        try {
-            Log.d(TAG, "onMeasure");
-            Thread.sleep(DELAY_MILLIS);
-        } catch (InterruptedException e) {
-            Log.e(TAG, "", e);
-        }
+        hardWork();
+    }
+
+    private void hardWork() {
+//        try {
+//            Thread.sleep(DELAY_MILLIS);
+//        } catch (InterruptedException e) {
+//            Log.e(TAG, "", e);
+//        }
+        for(int i=0; i < 100000L; ++i);
     }
 
     private Handler mHandler = new Handler();

@@ -17,6 +17,13 @@ public class LayoutDelayView extends View {
     private static final String TAG = "LayoutDelayView";
     private static final int DELAY_MILLIS = 50;
 
+    /*
+    onLayout()调用时机
+    View.java
+      layout()
+        (changed || (mPrivateFlags & PFLAG_LAYOUT_REQUIRED) == PFLAG_LAYOUT_REQUIRED)
+     */
+
     public LayoutDelayView(Context context) {
         super(context);
         init();
@@ -46,11 +53,16 @@ public class LayoutDelayView extends View {
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         super.onLayout(changed, left, top, right, bottom);
         Log.d(TAG, "onLayout");
-        try {
-            Thread.sleep(DELAY_MILLIS);
-        } catch (InterruptedException e) {
-            Log.e(TAG, "", e);
-        }
+        hardWork();
+    }
+
+    private void hardWork() {
+//        try {
+//            Thread.sleep(DELAY_MILLIS);
+//        } catch (InterruptedException e) {
+//            Log.e(TAG, "", e);
+//        }
+        for(int i=0; i < 100000L; ++i);
     }
 
     private Handler mHandler = new Handler();

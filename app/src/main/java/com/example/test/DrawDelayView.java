@@ -45,11 +45,16 @@ public class DrawDelayView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        try {
-            Thread.sleep(DELAY_MILLIS);
-        } catch (InterruptedException e) {
-            Log.e(TAG, "", e);
-        }
+        hardWork();
+    }
+
+    private void hardWork() {
+//        try {
+//            Thread.sleep(DELAY_MILLIS);
+//        } catch (InterruptedException e) {
+//            Log.e(TAG, "", e);
+//        }
+        for(int i=0; i < 100000L; ++i);
     }
 
     private Handler mHandler = new Handler();
