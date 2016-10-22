@@ -57,8 +57,3 @@ android {
 		abortOnError false
 	}
 }
-
-
-ext {
-    apkOutputDir = "${rootProject.projectDir}/build"
-}
