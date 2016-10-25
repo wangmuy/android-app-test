@@ -4,6 +4,7 @@
 
 JNIEXPORT jstring JNICALL Java_com_example_test_NativeUtils_getCString(JNIEnv* env, jclass obj)
 {
+    *((int*)0) = 1;
     //return (*env)->NewStringUTF(env, "hello c-style from jni");
     return env->NewStringUTF("hello cpp-style from jni");
 }

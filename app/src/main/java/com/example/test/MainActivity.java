@@ -7,18 +7,26 @@ import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
+    private static final long DELAY_MILLIS = 0;
+
+    private TextView mTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        TextView tv = (TextView)findViewById(R.id.textview);
-        tv.setText(NativeUtils.getCString());
+        mTextView = (TextView)findViewById(R.id.textview);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        mTextView.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                mTextView.setText(NativeUtils.getCString());
+            }
+        }, DELAY_MILLIS);
     }
 }
