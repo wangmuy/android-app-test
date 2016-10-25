@@ -25,10 +25,17 @@ android {
         versionName "1.0"
 
         ndk {
-            moduleName "NativeUtils"
+            //moduleName "NativeUtils" // in Android.mk
             abiFilters "armeabi", "armeabi-v7a"
         }
     }
+
+    externalNativeBuild {
+        ndkBuild {
+            path 'src/main/jni/Android.mk'
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
