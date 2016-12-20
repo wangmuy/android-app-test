@@ -2,14 +2,18 @@ package com.example.test;
 
 
 import android.app.Activity;
+import android.content.res.AssetFileDescriptor;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.ViewGroup;
 
 import java.io.FileInputStream;
 import java.lang.reflect.Method;
@@ -18,6 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class MainActivity extends AppCompatActivity implements MediaPlayer.OnPreparedListener, MediaPlayer.OnVideoSizeChangedListener {
     private static final String TAG = "MainActivity";
 
+    private ViewGroup mRootView;
     private MediaPlayer mMediaPlayer;
     private SurfaceView mSurfaceView;
 
@@ -36,7 +41,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayer.OnPre
         @Override
         public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
             Log.d(TAG, "surfaceChanged: w/h="+width+"/"+height);
-            playVideo("/data/tmp/test.mp4");
+            playVideo("small.mp4");
         }
 
         @Override
@@ -45,20 +50,39 @@ public class MainActivity extends AppCompatActivity implements MediaPlayer.OnPre
         }
     };
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+//        convertActivityFromTranslucent(this);
 
         setContentView(R.layout.activity_main);
+        mRootView = (ViewGroup)findViewById(R.id.rootview);
         mSurfaceView = (SurfaceView)findViewById(R.id.surfaceview);
 //        mSurfaceView.setZOrderOnTop(true);
         mSurfaceView.getHolder().addCallback(mSurfaceCb);
+        Log.d(TAG, "onCreate rootView.zOrder="+mRootView.getZ()+", surfaceView.zOrder="+mSurfaceView.getZ());
 
-//        mSurfaceView.postDelayed(new Runnable() {
-//            public void run() {
-//                convertActivityFromTranslucent(MainActivity.this);
-//            }
-//        }, 2000);
+        mSurfaceView.postDelayed(new Runnable() {
+            public void run() {
+                convertActivityFromTranslucent(MainActivity.this);
+                mSurfaceView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.d(TAG, "onCreate 2 rootView.zOrder="+mRootView.getZ()+", surfaceView.zOrder="+mSurfaceView.getZ());
+                    }
+                });
+            }
+        }, 5000);
+
+        Log.d(TAG, "onCreate before sleep");
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+        }
+        Log.d(TAG, "onCreate after sleep");
+//        convertActivityFromTranslucent(this);
+        getWindow().setBackgroundDrawableResource(android.R.color.holo_red_light);
     }
 
     private static void convertActivityFromTranslucent(Activity activity) {
@@ -88,7 +112,9 @@ public class MainActivity extends AppCompatActivity implements MediaPlayer.OnPre
     private void playVideo(String path) {
         try {
             mMediaPlayer = new MediaPlayer();
-            mMediaPlayer.setDataSource(new FileInputStream(path).getFD());
+            AssetFileDescriptor afd = getAssets().openFd(path);
+            mMediaPlayer.setDataSource(afd.getFileDescriptor(), afd.getStartOffset(), afd.getLength());
+//            mMediaPlayer.setDataSource(new FileInputStream(path).getFD());
             mMediaPlayer.setDisplay(mSurfaceView.getHolder());
             mMediaPlayer.setOnPreparedListener(this);
             mMediaPlayer.setOnVideoSizeChangedListener(this);
