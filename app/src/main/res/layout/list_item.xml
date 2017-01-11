@@ -1,16 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.example.test.MyFrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:myviews="http://schemas.android.com/apk/res-auto"
     android:id="@+id/item_frame"
     android:layout_width="@dimen/listitem_width_inset"
     android:layout_height="@dimen/listitem_height_inset"
     android:layout_marginLeft="@dimen/listitem_bg_margin_left"
+    myviews:mypaddingLeft="-11dp"
+    myviews:mypaddingRight="-11dp"
+    myviews:mypaddingBottom="-11dp"
     android:focusable="true"
-    android:focusableInTouchMode="true"
+
     android:background="@drawable/bg_normal">
+    <!--android:focusableInTouchMode="true"-->
     <ImageView
         android:id="@+id/item_image"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:padding="5dp"
+        android:background="@drawable/item_image_bg"
         android:scaleType="fitXY"
         android:duplicateParentState="true"
         android:src="@drawable/ic_launcher" />
@@ -19,8 +26,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:duplicateParentState="true"
         android:paddingTop="10dp"
         android:paddingBottom="10dp"
+        android:textColor="@android:color/white"
+        android:textAlignment="center"
+        android:background="#2C8AFA"
         android:alpha="0"/>
-</FrameLayout>
+</com.example.test.MyFrameLayout>

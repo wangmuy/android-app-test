@@ -3,8 +3,10 @@ package com.example.test;
 
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
+import android.app.Instrumentation;
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -30,24 +32,26 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+        new Instrumentation().setInTouchMode(false);
 
-//        mRecyclerView.setChildDrawingOrderCallback(new RecyclerView.ChildDrawingOrderCallback() {
-//            private int focused = Integer.MAX_VALUE;
-//            @Override
-//            public int onGetChildDrawingOrder(int childCount, int i) {
-//                final boolean isFocused = mRecyclerView.getChildAt(i).isFocused();
-//                int order = i;
-//                final boolean isLast = (i == childCount -1);
-//                if(isFocused) {
-//                    order = childCount-1;
-//                    focused = i;
-//                }
-//                if(isLast && !isFocused) {
-//                    order = focused;
-//                }
-//                return order;
-//            }
-//        });
+        mRecyclerView.setChildDrawingOrderCallback(new RecyclerView.ChildDrawingOrderCallback() {
+            private int focused = Integer.MAX_VALUE;
+            @Override
+            public int onGetChildDrawingOrder(int childCount, int i) {
+                int order = i;
+                final boolean isLast = (i == childCount -1);
+                final boolean isFocused = mRecyclerView.getChildAt(i).isFocused();
+                if(i==0) focused = Integer.MAX_VALUE;
+                if(isFocused) {
+                    order = childCount-1;
+                    focused = i;
+                }
+                if(isLast && !isFocused && focused < childCount) {
+                    order = focused;
+                }
+                return order;
+            }
+        });
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         mAdapter = new SimpleAdapter(this);
         mRecyclerView.setAdapter(mAdapter);
@@ -61,10 +65,8 @@ public class MainActivity extends AppCompatActivity {
         mRecyclerView.post(new Runnable() {
             @Override
             public void run() {
-                View v = mRecyclerView.getChildAt(0);
-                Log.d(TAG, "setModel requestFocus on "+v);
-                if(v != null)
-                    v.requestFocus();
+                View v = mRecyclerView.getFocusedChild();
+                if(v == null) mRecyclerView.requestFocus();
             }
         });
     }
@@ -97,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
             if(model == null || position >= model.length)
                 return;
             String s = model[position];
-            if(s != null) {
+            if(s != null && holder.mText != null) {
                 holder.mText.setText(s);
             }
             holder.position = position;
@@ -124,17 +126,20 @@ public class MainActivity extends AppCompatActivity {
             @OnFocusChange(R.id.item_frame)
             @Override
             public void onFocusChange(View view, boolean isFocused) {
-                if(!view.isAttachedToWindow())
+                SimpleViewHolder holder = (SimpleViewHolder) view.getTag();
+                if(!view.isAttachedToWindow() || holder == null || holder.mText == null)
                     return;
 //                Log.d(TAG, "onFocusChange: "+isFocused+"/"+view);
+                if(isFocused)
+                    view.bringToFront();
                 final float scaleTo = (isFocused? 1.1f : 1.0f);
                 view.animate().scaleX(scaleTo).scaleY(scaleTo).setDuration(200).start();
-                final float TRANSY = view.getMeasuredHeight();
+                final float TRANSY = holder.mText.getMeasuredHeight();
                 final float textTranslationY = (isFocused? 0 : TRANSY);
                 final float textAlphaTo = (isFocused? 1.0f : 0f);
-                SimpleViewHolder holder = (SimpleViewHolder) view.getTag();
                 if(isFocused) {
-                    ObjectAnimator animTransY = ObjectAnimator.ofFloat(holder.mText, "textTranslationY", TRANSY, textTranslationY);
+                    Log.d(TAG, "onFocusChange: trans "+TRANSY+"->"+textTranslationY+", alpha to "+textAlphaTo);//+", stacktrace="+Log.getStackTraceString(new Throwable()));
+                    ObjectAnimator animTransY = ObjectAnimator.ofFloat(holder.mText, "translationY", TRANSY, textTranslationY);
                     ObjectAnimator animAlpha = ObjectAnimator.ofFloat(holder.mText, "alpha", textAlphaTo);
                     AnimatorSet as = new AnimatorSet().setDuration(200);
                     as.playTogether(animTransY, animAlpha);

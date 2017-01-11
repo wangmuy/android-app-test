@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="MyFrameLayout">
+        <attr name="mypadding" format="dimension" />
+        <attr  name="mypaddingLeft" format="dimension" />
+        <attr  name="mypaddingTop" format="dimension" />
+        <attr  name="mypaddingRight" format="dimension" />
+        <attr  name="mypaddingBottom" format="dimension" />
+    </declare-styleable>
+</resources>

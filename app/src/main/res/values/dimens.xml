@@ -7,5 +7,7 @@
     <dimen name="listitem_height">@dimen/recyclerview_height</dimen>
     <dimen name="listitem_bg_margin_left">-11dp</dimen>
     <dimen name="listitem_width_inset">222dp</dimen>
-    <dimen name="listitem_height_inset">177dp</dimen>
+    <dimen name="listitem_height_inset">161dp</dimen>
+
+    <dimen name="match_parent">-1px</dimen>
 </resources>
