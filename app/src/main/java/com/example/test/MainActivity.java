@@ -126,11 +126,10 @@ public class MainActivity extends AppCompatActivity {
             public void onFocusChange(View view, boolean isFocused) {
                 if(!view.isAttachedToWindow())
                     return;
-                if(isFocused)
-                    view.bringToFront();
+//                Log.d(TAG, "onFocusChange: "+isFocused+"/"+view);
                 final float scaleTo = (isFocused? 1.1f : 1.0f);
                 view.animate().scaleX(scaleTo).scaleY(scaleTo).setDuration(200).start();
-                final float TRANSY = 100f;
+                final float TRANSY = view.getMeasuredHeight();
                 final float textTranslationY = (isFocused? 0 : TRANSY);
                 final float textAlphaTo = (isFocused? 1.0f : 0f);
                 SimpleViewHolder holder = (SimpleViewHolder) view.getTag();

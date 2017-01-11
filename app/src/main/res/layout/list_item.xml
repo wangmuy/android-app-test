@@ -5,6 +5,7 @@
     android:layout_height="@dimen/listitem_height_inset"
     android:layout_marginLeft="@dimen/listitem_bg_margin_left"
     android:focusable="true"
+    android:focusableInTouchMode="true"
     android:background="@drawable/bg_normal">
     <ImageView
         android:id="@+id/item_image"
