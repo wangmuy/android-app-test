@@ -7,4 +7,8 @@
         <attr  name="mypaddingRight" format="dimension" />
         <attr  name="mypaddingBottom" format="dimension" />
     </declare-styleable>
+
+    <declare-styleable name="RecyclerViewEx">
+        <attr name="emptyView" format="reference" />
+    </declare-styleable>
 </resources>

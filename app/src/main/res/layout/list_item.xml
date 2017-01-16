@@ -29,7 +29,7 @@
         android:paddingTop="10dp"
         android:paddingBottom="10dp"
         android:textColor="@android:color/white"
-        android:textAlignment="center"
+        android:gravity="center_horizontal"
         android:background="#2C8AFA"
         android:alpha="0"/>
 </com.example.test.MyFrameLayout>

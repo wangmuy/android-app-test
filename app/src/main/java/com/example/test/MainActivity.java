@@ -8,17 +8,24 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SimpleItemAnimator;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import butterknife.OnFocusChange;
 
 public class MainActivity extends AppCompatActivity {
@@ -26,6 +33,9 @@ public class MainActivity extends AppCompatActivity {
 
     @BindView(R.id.recyclerview) RecyclerView mRecyclerView;
     SimpleAdapter mAdapter;
+    @BindView(R.id.removeBtn) Button mCloseBtn;
+
+    private SimpleItemAnimator mAnimator = new MyItemAnimator();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         new Instrumentation().setInTouchMode(false);
 
+        mRecyclerView.setItemAnimator(mAnimator);
         mRecyclerView.setChildDrawingOrderCallback(new RecyclerView.ChildDrawingOrderCallback() {
             private int focused = Integer.MAX_VALUE;
             @Override
@@ -76,16 +87,27 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
     }
 
+    @OnClick(R.id.removeBtn)
+    public void removeOneItem(View btn) {
+        SimpleAdapter adapter = (SimpleAdapter)mRecyclerView.getAdapter();
+        adapter.getModel().remove(0);
+        adapter.notifyItemRemoved(0);
+    }
+
     static class SimpleAdapter extends RecyclerView.Adapter<SimpleAdapter.SimpleViewHolder> {
         private LayoutInflater lf;
-        private String[] model;
+        private ArrayList<String> model;
 
         public SimpleAdapter(Context c) {
             lf = LayoutInflater.from(c);
         }
 
-        public void setModel(Object[] m) {
-            model = (String[]) m;
+        public void setModel(String[] m) {
+            model = new ArrayList<String>(Arrays.asList(m));
+        }
+
+        public ArrayList<String> getModel() {
+            return model;
         }
 
         @Override
@@ -96,19 +118,19 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(SimpleViewHolder holder, int position) {
-            if(model == null || position >= model.length)
+            if(model == null || position >= model.size())
                 return;
-            String s = model[position];
+            String s = model.get(position);
             if(s != null && holder.mText != null) {
                 holder.mText.setText(s);
             }
             holder.position = position;
-            Log.d(TAG, "onBindViewHolder: "+position+"/"+model.length+"/"+s);
+            Log.d(TAG, "onBindViewHolder: "+position+"/"+model.size()+"/"+s);
         }
 
         @Override
         public int getItemCount() {
-            int count = model != null? model.length : 0;
+            int count = model != null? model.size() : 0;
             return count;
         }
 
@@ -138,12 +160,8 @@ public class MainActivity extends AppCompatActivity {
                 final float textTranslationY = (isFocused? 0 : TRANSY);
                 final float textAlphaTo = (isFocused? 1.0f : 0f);
                 if(isFocused) {
-                    Log.d(TAG, "onFocusChange: trans "+TRANSY+"->"+textTranslationY+", alpha to "+textAlphaTo);//+", stacktrace="+Log.getStackTraceString(new Throwable()));
-                    ObjectAnimator animTransY = ObjectAnimator.ofFloat(holder.mText, "translationY", TRANSY, textTranslationY);
-                    ObjectAnimator animAlpha = ObjectAnimator.ofFloat(holder.mText, "alpha", textAlphaTo);
-                    AnimatorSet as = new AnimatorSet().setDuration(200);
-                    as.playTogether(animTransY, animAlpha);
-                    as.start();
+                    Log.d(TAG, "onFocusChange: trans "+TRANSY+"->"+textTranslationY+", alpha to "+textAlphaTo);
+                    holder.mText.animate().translationY(textTranslationY).alpha(textAlphaTo).setDuration(200).start();
                 } else {
                     holder.mText.setTranslationY(textTranslationY);
                     holder.mText.setAlpha(textAlphaTo);
