@@ -180,12 +180,6 @@ public class MyItemAnimator extends SimpleItemAnimator {
         return this;
     }
 
-    public boolean animateRemove(final ViewHolder holder, Animator animator) {
-        animateRemove(holder);
-
-        return true;
-    }
-
     private void animateRemoveImpl(final ViewHolder holder) {
         final View view = holder.itemView;
         mRemoveAnimations.add(holder);
@@ -230,8 +224,8 @@ public class MyItemAnimator extends SimpleItemAnimator {
 
     @Override
     public boolean animateAdd(final ViewHolder holder) {
-        resetAnimation(holder);
         holder.itemView.setAlpha(0);
+        resetAnimation(holder);
         mPendingAdditions.add(holder);
         return true;
     }
@@ -312,7 +306,7 @@ public class MyItemAnimator extends SimpleItemAnimator {
     }
 
     public MyItemAnimator setMoveAnimation(ViewHolder holder, Animator animator) {
-        mRemoveCustomAnimators.put(holder, animator);
+        mMoveCustomAnimators.put(holder, animator);
         return this;
     }
 
@@ -338,8 +332,10 @@ public class MyItemAnimator extends SimpleItemAnimator {
 
         Animator customAnim = mMoveCustomAnimators.get(holder);
         if(customAnim != null) {
-            customAnim.addListener(dispatchListener);
-            customAnim.start();
+            if(deltaX != 0 || deltaY != 0) {
+                customAnim.addListener(dispatchListener);
+                customAnim.start();
+            }
         } else {
             if (deltaX != 0) {
                 view.animate().translationX(0);

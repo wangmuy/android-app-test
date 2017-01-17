@@ -22,11 +22,21 @@
         android:layout_marginBottom="100dp"
         android:clipChildren="false"
         myviews:emptyView="@id/emptyview" />
-    <Button android:id="@+id/removeBtn"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:orientation="horizontal"
         android:layout_gravity="center_horizontal|bottom"
-        android:layout_marginBottom="25dp"
-        android:background="@drawable/item_image_bg"
-        android:text="Close" />
+        android:layout_marginBottom="25dp">
+        <Button android:id="@+id/addBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/item_image_bg"
+            android:text="Add" />
+        <Button android:id="@+id/removeBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/item_image_bg"
+            android:text="Close" />
+    </LinearLayout>
 </FrameLayout>

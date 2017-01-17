@@ -1,19 +1,14 @@
 package com.example.test;
 
 
-import android.animation.Animator;
-import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
 import android.app.Instrumentation;
 import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.SimpleItemAnimator;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,6 +19,8 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Random;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -37,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
     SimpleAdapter mAdapter;
     @BindView(R.id.removeBtn) Button mCloseBtn;
 
+    private LinearLayoutManager mLayoutManager;
     private MyItemAnimator mAnimator = new MyItemAnimator();
 
     @Override
@@ -65,15 +63,16 @@ public class MainActivity extends AppCompatActivity {
                 return order;
             }
         });
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        mAdapter = new SimpleAdapter(this);
+        mLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
+        mRecyclerView.setLayoutManager(mLayoutManager);
+        mAdapter = new SimpleAdapter(this, mAnimator);
         mRecyclerView.setAdapter(mAdapter);
 
         setModel();
     }
 
     private void setModel() {
-        mAdapter.setModel(new String[]{"s1", "s2", "s3"});
+        mAdapter.setModel(Arrays.asList(new String[]{"s1", "s2", "s3"}));
         mAdapter.notifyDataSetChanged();
         mRecyclerView.post(new Runnable() {
             @Override
@@ -89,25 +88,48 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
     }
 
+    private Random rand = new Random();
+    private int randCount;
+
     @OnClick(R.id.removeBtn)
     public void removeOneItem(View btn) {
         SimpleAdapter adapter = (SimpleAdapter)mRecyclerView.getAdapter();
+        final int first = mLayoutManager.findFirstVisibleItemPosition();
         if(adapter.getItemCount() > 0) {
-            adapter.getModel().remove(0);
-            adapter.notifyItemRemoved(0);
+            int randi = Math.min(first+rand.nextInt(3), Math.max(0, adapter.getItemCount()-1));
+            Log.d(TAG, "removeOneItem: "+randi);
+            adapter.getModel().remove(randi);
+            adapter.notifyItemRemoved(randi);
+            mRecyclerView.scrollToPosition(randi);
         }
     }
 
-    /*static*/ class SimpleAdapter extends RecyclerView.Adapter<SimpleAdapter.SimpleViewHolder> {
+    @OnClick(R.id.addBtn)
+    public void addOneItem(View btn) {
+        SimpleAdapter adapter = (SimpleAdapter)mRecyclerView.getAdapter();
+        ArrayList<String> list = adapter.getModel();
+        final int first = mLayoutManager.findFirstVisibleItemPosition();
+        int randi = Math.min(first+rand.nextInt(3), Math.max(0, list.size()-1));
+        ++randCount;
+        String rands = "rand"+Integer.toString(randi)+"-"+Integer.toString(randCount);
+        list.add(randi, rands);
+        Log.d(TAG, "addOneItem: "+rands);
+        adapter.notifyItemInserted(randi);
+        mRecyclerView.scrollToPosition(randi);
+    }
+
+    static class SimpleAdapter extends RecyclerView.Adapter<SimpleAdapter.SimpleViewHolder> {
+        private MyItemAnimator anim;
         private LayoutInflater lf;
         private ArrayList<String> model;
 
-        public SimpleAdapter(Context c) {
+        public SimpleAdapter(Context c, MyItemAnimator a) {
             lf = LayoutInflater.from(c);
+            anim = a;
         }
 
-        public void setModel(String[] m) {
-            model = new ArrayList<String>(Arrays.asList(m));
+        public void setModel(Collection<String> m) {
+            model = new ArrayList<String>(m);
         }
 
         public ArrayList<String> getModel() {
@@ -118,10 +140,6 @@ public class MainActivity extends AppCompatActivity {
         public SimpleViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View v = lf.inflate(R.layout.list_item, parent, false);
             SimpleViewHolder holder = new SimpleViewHolder(v);
-            ObjectAnimator myRemoveAnim = ObjectAnimator.ofPropertyValuesHolder(holder.itemView,
-                    PropertyValuesHolder.ofFloat(View.ALPHA, 0f), PropertyValuesHolder.ofFloat(View.TRANSLATION_Y, -300))
-                    .setDuration(200);
-            mAnimator.setRemoveAnimation(holder, myRemoveAnim);
             return holder;
         }
 
@@ -129,6 +147,19 @@ public class MainActivity extends AppCompatActivity {
         public void onBindViewHolder(SimpleViewHolder holder, int position) {
             if(model == null || position >= model.size())
                 return;
+
+            ObjectAnimator myRemoveAnim = ObjectAnimator.ofPropertyValuesHolder(holder.itemView,
+                    PropertyValuesHolder.ofFloat(View.ALPHA, 0f), PropertyValuesHolder.ofFloat(View.TRANSLATION_Y, 100, -300))
+                    .setDuration(200);
+            anim.setRemoveAnimation(holder, myRemoveAnim);
+            ObjectAnimator myMoveAnim = ObjectAnimator.ofPropertyValuesHolder(holder.itemView,
+                    PropertyValuesHolder.ofFloat(View.TRANSLATION_X, 0)).setDuration(200);
+            anim.setMoveAnimation(holder, myMoveAnim);
+            ObjectAnimator myAddAnim = ObjectAnimator.ofPropertyValuesHolder(holder.itemView,
+                    PropertyValuesHolder.ofFloat(View.ALPHA, 0, 1), PropertyValuesHolder.ofFloat(View.TRANSLATION_Y, 100, 0, -100, 0))
+                    .setDuration(200);
+            anim.setAddAnimation(holder, myAddAnim);
+
             String s = model.get(position);
             if(s != null && holder.mText != null) {
                 holder.mText.setText(s);
@@ -143,7 +174,7 @@ public class MainActivity extends AppCompatActivity {
             return count;
         }
 
-        public /*static*/ class SimpleViewHolder extends RecyclerView.ViewHolder implements View.OnFocusChangeListener {
+        public static class SimpleViewHolder extends RecyclerView.ViewHolder implements View.OnFocusChangeListener {
             private int position;
             @BindView(R.id.item_image) ImageView mThumbnail;
             @BindView(R.id.item_text) TextView mText;
