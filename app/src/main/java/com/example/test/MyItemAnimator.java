@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewPropertyAnimator;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class MyItemAnimator extends SimpleItemAnimator {
@@ -27,6 +28,12 @@ public class MyItemAnimator extends SimpleItemAnimator {
     private ArrayList<ViewHolder> mMoveAnimations = new ArrayList<ViewHolder>();
     private ArrayList<ViewHolder> mRemoveAnimations = new ArrayList<ViewHolder>();
     private ArrayList<ViewHolder> mChangeAnimations = new ArrayList<ViewHolder>();
+
+    private HashMap<ViewHolder, Animator> mAddCustomAnimators = new HashMap<>();
+    private HashMap<ViewHolder, Animator> mMoveCustomAnimators = new HashMap<>();
+    private HashMap<ViewHolder, Animator> mRemoveCustomAnimators = new HashMap<>();
+    private HashMap<ViewHolder, Animator> mOldChangeCustomAnimators = new HashMap<>();
+    private HashMap<ViewHolder, Animator> mNewChangeCustomAnimators = new HashMap<>();
 
     private static class MoveInfo {
         public ViewHolder holder;
@@ -168,12 +175,21 @@ public class MyItemAnimator extends SimpleItemAnimator {
         return true;
     }
 
+    public MyItemAnimator setRemoveAnimation(ViewHolder holder, Animator animator) {
+        mRemoveCustomAnimators.put(holder, animator);
+        return this;
+    }
+
+    public boolean animateRemove(final ViewHolder holder, Animator animator) {
+        animateRemove(holder);
+
+        return true;
+    }
+
     private void animateRemoveImpl(final ViewHolder holder) {
         final View view = holder.itemView;
-        final ViewPropertyAnimator animation = view.animate();
         mRemoveAnimations.add(holder);
-        animation.setDuration(getRemoveDuration())
-                .alpha(0).setListener(new VpaListenerAdapter() {
+        final Animator.AnimatorListener dispatchListener = new VpaListenerAdapter() {
             @Override
             public void onAnimationStart(Animator animator) {
                 dispatchRemoveStarting(holder);
@@ -181,13 +197,35 @@ public class MyItemAnimator extends SimpleItemAnimator {
 
             @Override
             public void onAnimationEnd(Animator animator) {
-                animation.setListener(null);
-                view.setAlpha(1);
                 dispatchRemoveFinished(holder);
                 mRemoveAnimations.remove(holder);
+                mRemoveCustomAnimators.remove(holder);
                 dispatchFinishedWhenDone();
             }
-        }).start();
+        };
+
+        Animator customAnim = mRemoveCustomAnimators.get(holder);
+        if(customAnim != null) {
+            customAnim.addListener(dispatchListener);
+            customAnim.start();
+        } else {
+            final ViewPropertyAnimator animation = view.animate();
+            final Animator.AnimatorListener listener = new VpaListenerAdapter() {
+                @Override
+                public void onAnimationStart(Animator animator) {
+                    dispatchListener.onAnimationStart(animator);
+                }
+
+                @Override
+                public void onAnimationEnd(Animator animator) {
+                    animation.setListener(null);
+                    view.setAlpha(1);
+                    dispatchListener.onAnimationEnd(animator);;
+                }
+            };
+            animation.setDuration(getRemoveDuration())
+                    .alpha(0).setListener(listener).start();
+        }
     }
 
     @Override
@@ -198,29 +236,56 @@ public class MyItemAnimator extends SimpleItemAnimator {
         return true;
     }
 
+    public MyItemAnimator setAddAnimation(ViewHolder holder, Animator animator) {
+        mAddCustomAnimators.put(holder, animator);
+        return this;
+    }
+
     private void animateAddImpl(final ViewHolder holder) {
         final View view = holder.itemView;
-        final ViewPropertyAnimator animation = view.animate();
         mAddAnimations.add(holder);
-        animation.alpha(1).setDuration(getAddDuration()).
-                setListener(new VpaListenerAdapter() {
-                    @Override
-                    public void onAnimationStart(Animator animator) {
-                        dispatchAddStarting(holder);
-                    }
-                    @Override
-                    public void onAnimationCancel(Animator animator) {
-                        view.setAlpha(1);
-                    }
 
-                    @Override
-                    public void onAnimationEnd(Animator animator) {
-                        animation.setListener(null);
-                        dispatchAddFinished(holder);
-                        mAddAnimations.remove(holder);
-                        dispatchFinishedWhenDone();
-                    }
-                }).start();
+        final Animator.AnimatorListener dispatchListener = new VpaListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animator) {
+                dispatchAddStarting(holder);
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animator) {
+                dispatchAddFinished(holder);
+                mAddAnimations.remove(holder);
+                mAddCustomAnimators.remove(holder);
+                dispatchFinishedWhenDone();
+            }
+        };
+
+        Animator customAnim = mAddCustomAnimators.get(holder);
+        if(customAnim != null) {
+            customAnim.addListener(dispatchListener);
+            customAnim.start();
+        } else {
+            final ViewPropertyAnimator animation = view.animate();
+            final Animator.AnimatorListener listener = new VpaListenerAdapter() {
+                @Override
+                public void onAnimationStart(Animator animator) {
+                    dispatchListener.onAnimationStart(animator);
+                }
+
+                @Override
+                public void onAnimationCancel(Animator animator) {
+                    view.setAlpha(1);
+                }
+
+                @Override
+                public void onAnimationEnd(Animator animator) {
+                    animation.setListener(null);
+                    dispatchListener.onAnimationEnd(animator);
+                }
+            };
+            animation.alpha(1).setDuration(getAddDuration()).
+                    setListener(listener).start();
+        }
     }
 
     @Override
@@ -246,43 +311,68 @@ public class MyItemAnimator extends SimpleItemAnimator {
         return true;
     }
 
+    public MyItemAnimator setMoveAnimation(ViewHolder holder, Animator animator) {
+        mRemoveCustomAnimators.put(holder, animator);
+        return this;
+    }
+
     private void animateMoveImpl(final ViewHolder holder, int fromX, int fromY, int toX, int toY) {
         final View view = holder.itemView;
         final int deltaX = toX - fromX;
         final int deltaY = toY - fromY;
-        if (deltaX != 0) {
-            view.animate().translationX(0);
-        }
-        if (deltaY != 0) {
-            view.animate().translationY(0);
-        }
-        // TODO: make EndActions end listeners instead, since end actions aren't called when
-        // vpas are canceled (and can't end them. why?)
-        // need listener functionality in VPACompat for this. Ick.
-        final ViewPropertyAnimator animation = view.animate();
         mMoveAnimations.add(holder);
-        animation.setDuration(getMoveDuration()).setListener(new VpaListenerAdapter() {
+
+        final Animator.AnimatorListener dispatchListener = new VpaListenerAdapter() {
             @Override
             public void onAnimationStart(Animator animator) {
                 dispatchMoveStarting(holder);
             }
             @Override
-            public void onAnimationCancel(Animator animator) {
-                if (deltaX != 0) {
-                    view.setTranslationX(0);
-                }
-                if (deltaY != 0) {
-                    view.setTranslationY(0);
-                }
-            }
-            @Override
             public void onAnimationEnd(Animator animator) {
-                animation.setListener(null);
                 dispatchMoveFinished(holder);
                 mMoveAnimations.remove(holder);
+                mMoveCustomAnimators.remove(holder);
                 dispatchFinishedWhenDone();
             }
-        }).start();
+        };
+
+        Animator customAnim = mMoveCustomAnimators.get(holder);
+        if(customAnim != null) {
+            customAnim.addListener(dispatchListener);
+            customAnim.start();
+        } else {
+            if (deltaX != 0) {
+                view.animate().translationX(0);
+            }
+            if (deltaY != 0) {
+                view.animate().translationY(0);
+            }
+            final ViewPropertyAnimator animation = view.animate();
+            Animator.AnimatorListener listener = new VpaListenerAdapter() {
+                @Override
+                public void onAnimationStart(Animator animator) {
+                    dispatchListener.onAnimationStart(animator);
+                }
+                @Override
+                public void onAnimationCancel(Animator animator) {
+                    if (deltaX != 0) {
+                        view.setTranslationX(0);
+                    }
+                    if (deltaY != 0) {
+                        view.setTranslationY(0);
+                    }
+                }
+                @Override
+                public void onAnimationEnd(Animator animator) {
+                    animation.setListener(null);
+                    dispatchListener.onAnimationEnd(animator);
+                }
+            };
+            // TODO: make EndActions end listeners instead, since end actions aren't called when
+            // vpas are canceled (and can't end them. why?)
+            // need listener functionality in VPACompat for this. Ick.
+            animation.setDuration(getMoveDuration()).setListener(listener).start();
+        }
     }
 
     @Override
@@ -309,18 +399,21 @@ public class MyItemAnimator extends SimpleItemAnimator {
         return true;
     }
 
+    public MyItemAnimator setChangeAnimator(ViewHolder oldHolder, ViewHolder newHolder,
+                                            Animator oldAnimator, Animator newAnimator) {
+        mOldChangeCustomAnimators.put(oldHolder, oldAnimator);
+        mNewChangeCustomAnimators.put(newHolder, newAnimator);
+        return this;
+    }
+
     private void animateChangeImpl(final ChangeInfo changeInfo) {
         final ViewHolder holder = changeInfo.oldHolder;
         final View view = holder == null ? null : holder.itemView;
         final ViewHolder newHolder = changeInfo.newHolder;
         final View newView = newHolder != null ? newHolder.itemView : null;
         if (view != null) {
-            final ViewPropertyAnimator oldViewAnim = view.animate().setDuration(
-                    getChangeDuration());
             mChangeAnimations.add(changeInfo.oldHolder);
-            oldViewAnim.translationX(changeInfo.toX - changeInfo.fromX);
-            oldViewAnim.translationY(changeInfo.toY - changeInfo.fromY);
-            oldViewAnim.alpha(0).setListener(new VpaListenerAdapter() {
+            final Animator.AnimatorListener dispatchListener = new VpaListenerAdapter() {
                 @Override
                 public void onAnimationStart(Animator animator) {
                     dispatchChangeStarting(changeInfo.oldHolder, true);
@@ -328,36 +421,83 @@ public class MyItemAnimator extends SimpleItemAnimator {
 
                 @Override
                 public void onAnimationEnd(Animator animator) {
-                    oldViewAnim.setListener(null);
-                    view.setAlpha(1);
-                    view.setTranslationX(0);
-                    view.setTranslationY(0);
                     dispatchChangeFinished(changeInfo.oldHolder, true);
                     mChangeAnimations.remove(changeInfo.oldHolder);
+                    mOldChangeCustomAnimators.remove(changeInfo.oldHolder);
                     dispatchFinishedWhenDone();
                 }
-            }).start();
+            };
+
+            Animator oldCustomAnim = mOldChangeCustomAnimators.get(changeInfo.oldHolder);
+            if(oldCustomAnim != null) {
+                oldCustomAnim.addListener(dispatchListener);
+                oldCustomAnim.start();
+            } else {
+                final ViewPropertyAnimator oldViewAnim = view.animate().setDuration(
+                        getChangeDuration());
+                oldViewAnim.translationX(changeInfo.toX - changeInfo.fromX);
+                oldViewAnim.translationY(changeInfo.toY - changeInfo.fromY);
+                Animator.AnimatorListener listener = new VpaListenerAdapter() {
+                    @Override
+                    public void onAnimationStart(Animator animator) {
+                        dispatchListener.onAnimationStart(animator);
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animator animator) {
+                        oldViewAnim.setListener(null);
+                        view.setAlpha(1);
+                        view.setTranslationX(0);
+                        view.setTranslationY(0);
+                        dispatchListener.onAnimationEnd(animator);
+                    }
+                };
+                oldViewAnim.alpha(0).setListener(listener).start();
+            }
         }
         if (newView != null) {
-            final ViewPropertyAnimator newViewAnimation = newView.animate();
             mChangeAnimations.add(changeInfo.newHolder);
-            newViewAnimation.translationX(0).translationY(0).setDuration(getChangeDuration()).
-                    alpha(1).setListener(new VpaListenerAdapter() {
+            Animator.AnimatorListener dispatchListener = new VpaListenerAdapter() {
                 @Override
                 public void onAnimationStart(Animator animator) {
                     dispatchChangeStarting(changeInfo.newHolder, false);
                 }
                 @Override
                 public void onAnimationEnd(Animator animator) {
-                    newViewAnimation.setListener(null);
-                    newView.setAlpha(1);
-                    newView.setTranslationX(0);
-                    newView.setTranslationY(0);
                     dispatchChangeFinished(changeInfo.newHolder, false);
                     mChangeAnimations.remove(changeInfo.newHolder);
+                    mOldChangeCustomAnimators.remove(changeInfo.newHolder);
                     dispatchFinishedWhenDone();
                 }
-            }).start();
+            };
+
+            Animator newCustomAnim = mNewChangeCustomAnimators.get(changeInfo.newHolder);
+            if(newCustomAnim != null) {
+                newCustomAnim.addListener(dispatchListener);
+                newCustomAnim.start();
+            } else {
+                final ViewPropertyAnimator newViewAnimation = newView.animate();
+                Animator.AnimatorListener listener = new VpaListenerAdapter() {
+                    @Override
+                    public void onAnimationStart(Animator animator) {
+                        dispatchChangeStarting(changeInfo.newHolder, false);
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animator animator) {
+                        newViewAnimation.setListener(null);
+                        newView.setAlpha(1);
+                        newView.setTranslationX(0);
+                        newView.setTranslationY(0);
+                        dispatchChangeFinished(changeInfo.newHolder, false);
+                        mChangeAnimations.remove(changeInfo.newHolder);
+                        mOldChangeCustomAnimators.remove(changeInfo.newHolder);
+                        dispatchFinishedWhenDone();
+                    }
+                };
+                newViewAnimation.translationX(0).translationY(0).setDuration(getChangeDuration()).
+                        alpha(1).setListener(listener).start();
+            }
         }
     }
 
@@ -383,8 +523,10 @@ public class MyItemAnimator extends SimpleItemAnimator {
     private boolean endChangeAnimationIfNecessary(ChangeInfo changeInfo, ViewHolder item) {
         boolean oldItem = false;
         if (changeInfo.newHolder == item) {
+            mNewChangeCustomAnimators.remove(changeInfo.newHolder);
             changeInfo.newHolder = null;
         } else if (changeInfo.oldHolder == item) {
+            mOldChangeCustomAnimators.remove(changeInfo.oldHolder);
             changeInfo.oldHolder = null;
             oldItem = true;
         } else {
@@ -409,6 +551,7 @@ public class MyItemAnimator extends SimpleItemAnimator {
                 view.setTranslationY(0);
                 view.setTranslationX(0);
                 dispatchMoveFinished(item);
+                mMoveCustomAnimators.remove(moveInfo.holder);
                 mPendingMoves.remove(i);
             }
         }
@@ -416,10 +559,12 @@ public class MyItemAnimator extends SimpleItemAnimator {
         if (mPendingRemovals.remove(item)) {
             view.setAlpha(1);
             dispatchRemoveFinished(item);
+            mRemoveCustomAnimators.remove(item);
         }
         if (mPendingAdditions.remove(item)) {
             view.setAlpha(1);
             dispatchAddFinished(item);
+            mAddCustomAnimators.remove(item);
         }
 
         for (int i = mChangesList.size() - 1; i >= 0; i--) {
@@ -438,6 +583,7 @@ public class MyItemAnimator extends SimpleItemAnimator {
                     view.setTranslationX(0);
                     dispatchMoveFinished(item);
                     moves.remove(j);
+                    mMoveCustomAnimators.remove(item);
                     if (moves.isEmpty()) {
                         mMovesList.remove(i);
                     }
@@ -450,6 +596,7 @@ public class MyItemAnimator extends SimpleItemAnimator {
             if (additions.remove(item)) {
                 view.setAlpha(1);
                 dispatchAddFinished(item);
+                mAddCustomAnimators.remove(item);
                 if (additions.isEmpty()) {
                     mAdditionsList.remove(i);
                 }
@@ -520,12 +667,14 @@ public class MyItemAnimator extends SimpleItemAnimator {
             view.setTranslationX(0);
             dispatchMoveFinished(item.holder);
             mPendingMoves.remove(i);
+            mMoveCustomAnimators.remove(item.holder);
         }
         count = mPendingRemovals.size();
         for (int i = count - 1; i >= 0; i--) {
             ViewHolder item = mPendingRemovals.get(i);
             dispatchRemoveFinished(item);
             mPendingRemovals.remove(i);
+            mRemoveCustomAnimators.remove(item);
         }
         count = mPendingAdditions.size();
         for (int i = count - 1; i >= 0; i--) {
@@ -534,6 +683,7 @@ public class MyItemAnimator extends SimpleItemAnimator {
             view.setAlpha(1);
             dispatchAddFinished(item);
             mPendingAdditions.remove(i);
+            mAddCustomAnimators.remove(item);
         }
         count = mPendingChanges.size();
         for (int i = count - 1; i >= 0; i--) {
@@ -556,6 +706,7 @@ public class MyItemAnimator extends SimpleItemAnimator {
                 view.setTranslationX(0);
                 dispatchMoveFinished(moveInfo.holder);
                 moves.remove(j);
+                mMoveCustomAnimators.remove(item);
                 if (moves.isEmpty()) {
                     mMovesList.remove(moves);
                 }
@@ -571,6 +722,7 @@ public class MyItemAnimator extends SimpleItemAnimator {
                 view.setAlpha(1);
                 dispatchAddFinished(item);
                 additions.remove(j);
+                mAddCustomAnimators.remove(item);
                 if (additions.isEmpty()) {
                     mAdditionsList.remove(additions);
                 }
@@ -599,6 +751,12 @@ public class MyItemAnimator extends SimpleItemAnimator {
     void cancelAll(List<ViewHolder> viewHolders) {
         for (int i = viewHolders.size() - 1; i >= 0; i--) {
             viewHolders.get(i).itemView.animate().cancel();
+            ViewHolder vh = viewHolders.get(i);
+            mRemoveCustomAnimators.remove(vh);
+            mMoveCustomAnimators.remove(vh);
+            mAddCustomAnimators.remove(vh);
+            mOldChangeCustomAnimators.remove(vh);
+            mNewChangeCustomAnimators.remove(vh);
         }
     }
 

@@ -1,8 +1,10 @@
 package com.example.test;
 
 
+import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
+import android.animation.PropertyValuesHolder;
 import android.app.Instrumentation;
 import android.content.Context;
 import android.os.Bundle;
@@ -35,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
     SimpleAdapter mAdapter;
     @BindView(R.id.removeBtn) Button mCloseBtn;
 
-    private SimpleItemAnimator mAnimator = new MyItemAnimator();
+    private MyItemAnimator mAnimator = new MyItemAnimator();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,11 +92,13 @@ public class MainActivity extends AppCompatActivity {
     @OnClick(R.id.removeBtn)
     public void removeOneItem(View btn) {
         SimpleAdapter adapter = (SimpleAdapter)mRecyclerView.getAdapter();
-        adapter.getModel().remove(0);
-        adapter.notifyItemRemoved(0);
+        if(adapter.getItemCount() > 0) {
+            adapter.getModel().remove(0);
+            adapter.notifyItemRemoved(0);
+        }
     }
 
-    static class SimpleAdapter extends RecyclerView.Adapter<SimpleAdapter.SimpleViewHolder> {
+    /*static*/ class SimpleAdapter extends RecyclerView.Adapter<SimpleAdapter.SimpleViewHolder> {
         private LayoutInflater lf;
         private ArrayList<String> model;
 
@@ -113,7 +117,12 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public SimpleViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View v = lf.inflate(R.layout.list_item, parent, false);
-            return new SimpleViewHolder(v);
+            SimpleViewHolder holder = new SimpleViewHolder(v);
+            ObjectAnimator myRemoveAnim = ObjectAnimator.ofPropertyValuesHolder(holder.itemView,
+                    PropertyValuesHolder.ofFloat(View.ALPHA, 0f), PropertyValuesHolder.ofFloat(View.TRANSLATION_Y, -300))
+                    .setDuration(200);
+            mAnimator.setRemoveAnimation(holder, myRemoveAnim);
+            return holder;
         }
 
         @Override
@@ -134,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
             return count;
         }
 
-        public static class SimpleViewHolder extends RecyclerView.ViewHolder implements View.OnFocusChangeListener {
+        public /*static*/ class SimpleViewHolder extends RecyclerView.ViewHolder implements View.OnFocusChangeListener {
             private int position;
             @BindView(R.id.item_image) ImageView mThumbnail;
             @BindView(R.id.item_text) TextView mText;
