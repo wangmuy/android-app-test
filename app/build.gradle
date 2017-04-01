@@ -1,44 +1,55 @@
-apply plugin: 'com.android.application'
+apply plugin: 'java'
 
-android {
-    compileSdkVersion 24
-    buildToolsVersion "24.0.1"
-/*
-    signingConfigs {
-        platform {
-            try {
-                storeFile file(PLATFORM_STORE_FILE)
-                storePassword PLATFORM_STORE_PASSWORD
-                keyAlias PLATFORM_KEY_ALIAS
-                keyPassword PLATFORM_KEY_PASSWORD
-            } catch(e) {
-                throw new InvalidUserDataException("define PLATFORM_STORE_FILE/PLATFORM_STORE_PASSWORD/PLATFORM_KEY_ALIAS/PLATFORM_KEY_PASSWORD in gradle.properties")
-            }
-        }
-    }
-*/
-    defaultConfig {
-        applicationId "com.example.test"
-        minSdkVersion 19
-        targetSdkVersion 24
-        versionCode 1
-        versionName "1.0"
-    }
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-    }
+dependencies {
+    compile fileTree(dir: 'libs', include:'*.jar')
+    compile fileTree(dir: SDKHOME + '/platforms/' + SDKTARGET, include:  '*.jar')
+    compile group: 'junit', name: 'junit', version: '4.11'
+}
 
-    buildTypes.all {
-        //buildType -> buildType.signingConfig = signingConfigs.platform
+sourceSets {
+    main {
+        java { srcDir 'src/main/java' }
     }
 }
 
-dependencies {
-    provided fileTree(dir: 'extlibs', include: ['*.jar'])
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:24.1.1'
+// https://github.com/FkinH/uiautomator-gradle
+
+project.ext {
+    // output dex file dir
+    outDir = 'build/bin'
+    outFile = new File(outDir+'/'+project.name+'.jar')
+}
+
+jar {
+    doLast {
+        new File(project.outDir).mkdir()
+        tasks.dex.execute()
+    }
+}
+
+task dex(dependsOn: jar, type:Exec) {
+    println 'Building dex...'
+    workingDir '.'
+    commandLine SDKHOME + '/' + SDKBUILDTOOLSDIR + '/' + 'dx.bat', '--dex', '--no-strict', '--multi-dex', '--output=' + project.outFile.absolutePath, jar.archivePath
+}
+
+
+// https://newfivefour.com/android-uiautomator-gradle.html
+
+task uiaInstall(dependsOn: ['build']) doLast {
+    Process proc = ["adb", "push", project.outFile.absolutePath, "/data/local/tmp"].execute()
+    proc.consumeProcessErrorStream(System.err)
+    proc.consumeProcessOutputStream(System.out)
+    if (proc.waitFor() != 0) {
+        throw new RuntimeException('push failed')
+    }
+}
+
+task uiaRun(dependsOn: ['uiaInstall']) doLast {
+    Process proc = ["adb", "shell", "uiautomator", "runtest", project.outFile.name].execute()
+    proc.consumeProcessErrorStream(System.err)
+    proc.consumeProcessOutputStream(System.out)
+    if (proc.waitFor() != 0) {
+        throw new RuntimeException('exec failed')
+    }
 }
