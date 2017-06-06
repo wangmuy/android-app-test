@@ -25,12 +25,13 @@ android {
         versionName "1.0"
 
         externalNativeBuild {
-            ndkBuild {
-                arguments "-j2"
+            cmake {
+                arguments "-DANDROID_ARM_NEON=TRUE", "-DANDROID_TOOLCHAIN=clang"
                 cFlags "-D_EXAMPLE_C_FLAG1", "-D_EXAMPLE_C_FLAG2"
                 cppFlags "-D__STDC_FORMAT_MACROS"
             }
         }
+
         ndk {
             //moduleName "NativeUtils" // in Android.mk
             abiFilters "armeabi", "armeabi-v7a"
@@ -38,8 +39,8 @@ android {
     }
 
     externalNativeBuild {
-        ndkBuild {
-            path 'src/main/jni/Android.mk'
+        cmake {
+            path 'src/main/jni/CMakeLists.txt'
         }
     }
 
