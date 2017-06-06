@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 24
-    buildToolsVersion "24.0.1"
+    buildToolsVersion "25.0.0"
 /*
     signingConfigs {
         platform {
@@ -24,6 +24,13 @@ android {
         versionCode 1
         versionName "1.0"
 
+        externalNativeBuild {
+            ndkBuild {
+                arguments "-j2"
+                cFlags "-D_EXAMPLE_C_FLAG1", "-D_EXAMPLE_C_FLAG2"
+                cppFlags "-D__STDC_FORMAT_MACROS"
+            }
+        }
         ndk {
             //moduleName "NativeUtils" // in Android.mk
             abiFilters "armeabi", "armeabi-v7a"
