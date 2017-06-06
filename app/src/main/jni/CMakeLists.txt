@@ -1,3 +1,5 @@
+# https://developer.android.com/studio/projects/add-native-code.html?hl=zh-cn
+
 # Sets the minimum version of CMake required to build your native library.
 # This ensures that a certain set of CMake features is available to
 # your build.
@@ -16,4 +18,21 @@ add_library(NativeUtils # library name
 # Specifies a path to native header files.
 include_directories(
     .
+)
+
+find_library(# Defines the name of the path variable that stores the
+    # location of the NDK library.
+    log-lib
+
+    # Specifies the name of the NDK library that
+    # CMake needs to locate.
+    log
+)
+
+# Links your native library against one or more other native libraries.
+target_link_libraries( # Specifies the target library.
+    NativeUtils
+
+    # Links the log library to the target library.
+    ${log-lib}
 )
