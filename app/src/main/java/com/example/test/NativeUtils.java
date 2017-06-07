@@ -6,8 +6,11 @@ package com.example.test;
  */
 public class NativeUtils {
     static {
+        System.loadLibrary("node");
         System.loadLibrary("NativeUtils");
     }
 
     public static native String getCString();
+
+    public static native int startNode(String... args);
 }

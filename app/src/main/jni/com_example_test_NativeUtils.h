@@ -15,6 +15,9 @@ extern "C" {
 JNIEXPORT jstring JNICALL Java_com_example_test_NativeUtils_getCString
   (JNIEnv *, jclass);
 
+JNIEXPORT jint JNICALL Java_com_example_test_NativeUtils_startNode
+  (JNIEnv* env, jclass obj, jobjectArray args);
+
 #ifdef __cplusplus
 }
 #endif

@@ -17,6 +17,14 @@ android {
         }
     }
 */
+
+    sourceSets {
+        main {
+            // let gradle pack the shared library into apk
+            jniLibs.srcDirs = ['src/main/jni/prebuilt/lib']
+        }
+    }
+
     defaultConfig {
         applicationId "com.example.test"
         minSdkVersion 19
@@ -27,14 +35,15 @@ android {
         externalNativeBuild {
             cmake {
                 arguments "-DANDROID_ARM_NEON=TRUE", "-DANDROID_TOOLCHAIN=clang"
-                cFlags "-D_EXAMPLE_C_FLAG1", "-D_EXAMPLE_C_FLAG2"
-                cppFlags "-D__STDC_FORMAT_MACROS"
+//                cFlags "-D_EXAMPLE_C_FLAG1", "-D_EXAMPLE_C_FLAG2"
+                cppFlags "-D__STDC_FORMAT_MACROS", "-std=c++11"
             }
         }
 
         ndk {
             //moduleName "NativeUtils" // in Android.mk
-            abiFilters "armeabi", "armeabi-v7a"
+            //abiFilters "armeabi", "armeabi-v7a"
+            abiFilters "armeabi-v7a"
         }
     }
 
