@@ -1,0 +1,103 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.3.3'
+    }
+}
+
+allprojects {
+    repositories {
+        jcenter()
+    }
+}
+
+apply plugin: 'com.android.library'
+
+// gradle.projectsEvaluated {
+//     tasks.withType(JavaCompile) {
+//         options.compilerArgs.add('-Xbootclasspath/p:'
+//                 +'../extlibs/libcore.jar;'
+//                 +'../extlibs/framework-base.jar;'
+//         )
+//     }
+// }
+
+// repositories {
+//     flatDir { dirs 'aars' }
+// }
+
+dependencies {
+    // provided fileTree(dir: '../extlibs', include: '*.jar')
+//    compile fileTree(dir: 'libs', include: '*.jar')
+}
+
+android {
+    compileSdkVersion 24
+    buildToolsVersion '25.0.3'
+
+    defaultConfig {
+        targetSdkVersion 24
+	    minSdkVersion 19
+    }
+
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+            java.srcDirs = ['src']
+            aidl.srcDirs = ['src']
+            // resources.srcDirs = ['src']
+            // renderscript.srcDirs = ['src']
+            res.srcDirs = ['res']
+            assets.srcDirs = ['assets']
+            jniLibs.srcDirs = ['jniLibs']
+        }
+    }
+
+	// signingConfigs {
+	// 	release {
+	// 		storeFile file(PLATFORM_STORE_FILE)
+	// 		storePassword PLATFORM_STORE_PASSWORD
+	// 	    keyAlias PLATFORM_KEY_ALIAS
+	// 		keyPassword PLATFORM_KEY_PASSWORD
+	// 	}
+	// }
+
+ //    buildTypes {
+ //        release {
+ //            signingConfig = signingConfigs.release
+ //        }
+ //    }
+
+	lintOptions {
+        checkAllWarnings false
+        checkReleaseBuilds false
+		abortOnError false
+	}
+
+}
+
+////由于android studiode 一个bug，必须把module的iml文件中的android sdk引用放到最下面
+//task pushDownJdkDependency {
+////本项目的iml文件名
+//    def imlFile = file("Settings-5.1.1_r6.iml")
+//    doLast {
+//        try {
+//            def parsedXml = (new XmlParser()).parse(imlFile)
+//            def jdkNode = parsedXml.component[1].orderEntry.find { it.'@type' == 'jdk' }
+//
+//            parsedXml.component[1].remove(jdkNode)
+////这里是target sdk版本，只需要改数字就行
+//            new Node(parsedXml.component[1], 'orderEntry', ['type': 'jdk', 'jdkName': "Android API 22 Platform", 'jdkType': 'Android SDK'])
+//            def writer = new StringWriter()
+//            new XmlNodePrinter(new PrintWriter(writer)).print(parsedXml)
+//            imlFile.text = writer.toString()
+//
+//        } catch (FileNotFoundException e) {
+//            // nop, iml not found
+//        }
+//    }
+//}
+//
+//tasks.preBuild.dependsOn(pushDownJdkDependency)
