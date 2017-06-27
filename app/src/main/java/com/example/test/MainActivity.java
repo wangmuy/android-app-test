@@ -102,12 +102,10 @@ public class MainActivity extends AppCompatActivity {
         final String sch = COPY_DIR_PATH + "wifi_w_pwd.png";
         Mat srcImg = Imgcodecs.imread(src);
         Mat schImg = Imgcodecs.imread(sch);
-        ArrayList<Point3> matches = OpenCVUtils.findAllTemplate(srcImg, schImg, 0.9, 8, false);
-        OpenCVUtils.markMatches(srcImg, schImg, matches);
+        ArrayList<Point3> matches = OpenCVUtils.findAll(srcImg, schImg, 0.9, 10, true);
+        Bitmap mark = OpenCVUtils.markMatchesToBitmap(srcImg, schImg, matches);
 
         mSrcBmp = BitmapFactory.decodeFile(src);
-        Bitmap mark = Bitmap.createBitmap(srcImg.cols(), srcImg.rows(), Bitmap.Config.ARGB_8888);
-        Utils.matToBitmap(srcImg, mark);
         mDstBmp = mark;
     }
 

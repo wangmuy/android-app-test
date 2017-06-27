@@ -1,8 +1,11 @@
 package com.example.test;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.util.Log;
 
 import org.opencv.android.OpenCVLoader;
+import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
@@ -11,6 +14,7 @@ import org.opencv.core.Scalar;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 /**
@@ -27,6 +31,26 @@ public class OpenCVUtils {
 
     public static boolean init() {
         return OpenCVLoader.initDebug();
+    }
+
+    public static ArrayList<Point3> findAll(String srcPath, String schPath, double threadshold, int maxCount, boolean bgRemove) {
+        final Mat srcImg = Imgcodecs.imread(srcPath);
+        final Mat schImg = Imgcodecs.imread(schPath);
+        ArrayList<Point3> matches = OpenCVUtils.findAllTemplate(srcImg, schImg, threadshold, maxCount, true);
+        return matches;
+    }
+
+    /**
+     * Find all matches
+     * @param src
+     * @param sch
+     * @param threadshold
+     * @param maxCount
+     * @param bgRemove
+     * @return list of (match.x, match.y, match.confidence)
+     */
+    public static ArrayList<Point3> findAll(Mat src, Mat sch, double threadshold, int maxCount, boolean bgRemove) {
+        return findAllTemplate(src, sch, threadshold, maxCount, bgRemove);
     }
 
     /**
@@ -61,10 +85,13 @@ public class OpenCVUtils {
         Imgproc.matchTemplate(source, search, result, procMethod);
 
         ArrayList<Point3> matchList = new ArrayList<>();
-        Scalar coverScalar = new Scalar(0, 0, 0);
+        final Scalar coverScalar = new Scalar(0);
+        final Scalar upDiff = new Scalar(1.0);
+        Mat mask = new Mat();
         while(true) {
             final Core.MinMaxLocResult minMax = Core.minMaxLoc(result);
             if (minMax.maxVal < threadshold) {
+                Log.d(TAG, "break because maxVal<threadshold, maxVal="+minMax.maxVal);
                 break;
             }
 
@@ -76,15 +103,30 @@ public class OpenCVUtils {
             }
             matchList.add(new Point3(topLeft.x, topLeft.y, minMax.maxVal));
             Log.d(TAG, "match: " + topLeft + " - " + new Point(topLeft.x + sch.cols(), topLeft.y + sch.rows()));
-            if(matchList.size() >= maxCount)
+            if(matchList.size() >= maxCount) {
+                Log.d(TAG, "break because maxCount reached");
                 break;
+            }
             // 遮掉当前最匹配的, 继续查找下一个匹配
-            Imgproc.rectangle(result, topLeft, new Point(topLeft.x+search.cols(), topLeft.y+search.rows()), coverScalar, -1);
+            Imgproc.floodFill(result, mask, topLeft, coverScalar, null,
+                    new Scalar(minMax.maxVal-threadshold+0.1), upDiff, Imgproc.FLOODFILL_FIXED_RANGE);
         }
 
         if(matchList.size() == 0)
-            Log.d(TAG, "no best match: threadshold=" + threadshold);
+            Log.d(TAG, "no match: threadshold=" + threadshold);
+        else
+            Log.d(TAG, "total matches "+matchList.size()+" for threadshold "+threadshold);
         return matchList;
+    }
+
+    /**
+     * Mark all matches and save to Bitmap
+     */
+    public static Bitmap markMatchesToBitmap(Mat source, Mat search, ArrayList<Point3> matchList) {
+        markMatches(source, search ,matchList);
+        Bitmap mark = Bitmap.createBitmap(source.cols(), source.rows(), Bitmap.Config.ARGB_8888);
+        Utils.matToBitmap(source, mark);
+        return mark;
     }
 
     /**
