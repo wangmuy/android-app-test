@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
                 H.post(new Runnable() {
                     @Override
                     public void run() {
-                        final String info = "Canny operation time: " + opTime + "ms";
+                        final String info = "Operation time: " + opTime + "ms";
                         Log.d(TAG, info);
                         mInfo.setText(info);
                         mSrcImg.setImageBitmap(mSrcBmp);

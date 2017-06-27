@@ -124,6 +124,7 @@ public class OpenCVUtils {
      */
     public static Bitmap markMatchesToBitmap(Mat source, Mat search, ArrayList<Point3> matchList) {
         markMatches(source, search ,matchList);
+        Imgproc.cvtColor(source, source, Imgproc.COLOR_RGB2BGR);
         Bitmap mark = Bitmap.createBitmap(source.cols(), source.rows(), Bitmap.Config.ARGB_8888);
         Utils.matToBitmap(source, mark);
         return mark;
@@ -136,7 +137,7 @@ public class OpenCVUtils {
      * @param matchList
      */
     public static void markMatches(Mat source, Mat search, ArrayList<Point3> matchList) {
-        final Scalar lineColor = new Scalar(255, 0, 0);
+        final Scalar lineColor = new Scalar(0, 0, 255); // blue for RGB2BGR convert
         Point topLeft = new Point();
         Point bottomRight = new Point();
         for(Point3 p3 : matchList) {
