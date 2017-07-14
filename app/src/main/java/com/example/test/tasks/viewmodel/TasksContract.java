@@ -20,6 +20,7 @@ import android.support.annotation.NonNull;
 
 import com.example.test.BasePresenter;
 import com.example.test.BaseView;
+import com.example.test.QueryState;
 import com.example.test.tasks.model.Task;
 import com.example.test.tasks.viewmodel.filter.TasksFilterType;
 
@@ -42,9 +43,7 @@ public interface TasksContract {
 
     interface Presenter extends BasePresenter {
 
-        Observable<Boolean> getIsTasksLoadingObservable();
-
-        Observable<List<Task>> getTaskListObservable();
+        Observable<QueryState<List<Task>>> getTaskListStateObservable();
 
         Observable<List<Task>> loadTasks(boolean forceUpdate);
 

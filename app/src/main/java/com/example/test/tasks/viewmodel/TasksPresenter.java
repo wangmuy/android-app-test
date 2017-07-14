@@ -19,6 +19,7 @@ package com.example.test.tasks.viewmodel;
 import android.support.annotation.NonNull;
 
 import com.example.test.ObservableField;
+import com.example.test.QueryState;
 import com.example.test.data.source.TasksRepository;
 import com.example.test.tasks.model.Task;
 import com.example.test.tasks.viewmodel.filter.FilterFactory;
@@ -53,13 +54,7 @@ public class TasksPresenter implements TasksContract.Presenter {
     private final ActivateTask mActivateTask;
     private final ClearCompleteTasks mClearCompleteTasks;
 
-    private ObservableField<Boolean> mIsDataLoading = new ObservableField<Boolean>(false) {
-        public Observable<Boolean> asObservable() {
-            return super.asObservable().serialize();
-        }
-    };
-
-    private ObservableField<List<Task>> mTasks = new ObservableField<>(null);
+    private ObservableField<QueryState<List<Task>>> mTasksQuery = new ObservableField<>(null);
 
     public TasksPresenter(@NonNull TasksRepository tasksRepository,
                           @NonNull TasksContract.View tasksView,
@@ -76,8 +71,8 @@ public class TasksPresenter implements TasksContract.Presenter {
     }
 
     @Override
-    public Observable<List<Task>> getTaskListObservable() {
-        return mTasks.asObservable();
+    public Observable<QueryState<List<Task>>> getTaskListStateObservable() {
+        return mTasksQuery.asObservable();
     }
 
     @Override
@@ -85,11 +80,6 @@ public class TasksPresenter implements TasksContract.Presenter {
         boolean force = forceUpdate || mFirstLoad;
         mFirstLoad = false;
         return loadTasks(force, true);
-    }
-
-    @Override
-    public Observable<Boolean> getIsTasksLoadingObservable() {
-        return mIsDataLoading.asObservable();
     }
 
     /**
@@ -100,11 +90,13 @@ public class TasksPresenter implements TasksContract.Presenter {
         mGetTasks.setRequestValues(new GetTasks.RequestValues(forceUpdate, mCurrentFiltering));
         return mGetTasks.execute()
                 .doOnSubscribe(() -> {
-                    if(showLoadingUI) mIsDataLoading.set(true);
+                    mTasksQuery.set(QueryState.inProgress());
                 })
-                .doOnTerminate(() -> mIsDataLoading.set(false))
                 .map(GetTasks.ResponseValue::getTasks)
-                .doOnNext(list -> mTasks.set(list))
+                .doOnNext(list -> {
+                    mTasksQuery.set(QueryState.success(list));
+                })
+                .doOnError((t) -> mTasksQuery.set(QueryState.error(t)))
                 .subscribeOn(mSchedulerProvider.io());
     }
 

@@ -97,29 +97,32 @@ public class TasksFragment extends Fragment implements TasksContract.View {
     public void onResume() {
         super.onResume();
 
-        //getTaskListObservable()
-        //loadTasks(true)
-        Subscription subLoad = mPresenter.getTaskListObservable()
+        Subscription subLoad = mPresenter.getTaskListStateObservable()
                 .observeOn(SchedulerProvider.getInstance().ui())
                 .subscribe(
-                        (list) -> {
-                            Log.d(TAG, "subscribe onNext:" + list);
-                            if(list != null) {
-                                if(list.size() == 0)
-                                    showNoTasks();
-                                else
-                                    showTasks(list);
+                        (state) -> {
+                            Log.d(TAG, "subscribe onNext:" + state);
+                            if(state != null) {
+                                setLoadingIndicator(state.inProgress);
+                                if(state.success) {
+                                    if(state.value.size() == 0)
+                                        showNoTasks();
+                                    else
+                                        showTasks(state.value);
 
-                                switch(mPresenter.getFiltering()) {
-                                    case ACTIVE_TASKS:
-                                        showActiveFilterLabel();
-                                        break;
-                                    case COMPLETED_TASKS:
-                                        showCompletedFilterLabel();
-                                        break;
-                                    default:
-                                        showAllFilterLabel();
-                                        break;
+                                    switch(mPresenter.getFiltering()) {
+                                        case ACTIVE_TASKS:
+                                            showActiveFilterLabel();
+                                            break;
+                                        case COMPLETED_TASKS:
+                                            showCompletedFilterLabel();
+                                            break;
+                                        default:
+                                            showAllFilterLabel();
+                                            break;
+                                    }
+                                } else if(!state.inProgress) {
+                                    showLoadingTasksError();
                                 }
                             }
                         },
@@ -133,20 +136,6 @@ public class TasksFragment extends Fragment implements TasksContract.View {
 
                 );
         mSubscriptions.add(subLoad);
-
-        Subscription subShowLoading = mPresenter.getIsTasksLoadingObservable()
-                .observeOn(SchedulerProvider.getInstance().ui())
-                .subscribe((showing) -> {
-                            Log.d(TAG, "subShowLoading onNext: "+showing);
-                            setLoadingIndicator(showing);
-                        },
-                        (t)-> {
-                            Log.d(TAG, "subShowLoading onError");
-                        },
-                        () -> {
-                            Log.d(TAG, "subShowLoading onComplete");
-                        });
-        mSubscriptions.add(subShowLoading);
 
         mPresenter.loadTasks(true).subscribe();
     }
