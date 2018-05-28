@@ -16,7 +16,9 @@ public class FloatingWindowService extends Service {
     private static final String TAG = "FloatingWindowService";
 
     private static final String ACTION_OPEN_ALERT_WINDOW = "com.example.test.action.OPEN_ALERT";
+    private static final String ACTION_CLOSE_ALERT_WINDOW = "com.example.test.action.CLOSE_ALERT";
     private static final String ACTION_OPEN_OVERLAY_WINDOW = "com.example.test.action.OPEN_OVERLAY";
+    private static final String ACTION_CLOSE_OVERLAY_WINDOW = "com.example.test.action.CLOSE_OVERLAY";
 
     private BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
@@ -39,7 +41,9 @@ public class FloatingWindowService extends Service {
         Log.d(TAG, "onCreate");
         final IntentFilter filter = new IntentFilter();
         filter.addAction(ACTION_OPEN_ALERT_WINDOW);
+        filter.addAction(ACTION_CLOSE_ALERT_WINDOW);
         filter.addAction(ACTION_OPEN_OVERLAY_WINDOW);
+        filter.addAction(ACTION_CLOSE_OVERLAY_WINDOW);
         registerReceiver(mReceiver, filter);
 
         mAlertDialog = new AlertDialog.Builder(this)
@@ -98,6 +102,10 @@ public class FloatingWindowService extends Service {
                 handleOpenAlertWindow();
             } else if (ACTION_OPEN_OVERLAY_WINDOW.equals(action)) {
                 handleOpenOverlayWindow();
+            } else if (ACTION_CLOSE_ALERT_WINDOW.equals(action)) {
+                handleCloseAlertWindow();
+            } else if (ACTION_CLOSE_OVERLAY_WINDOW.equals(action)) {
+                handleCloseOverlayWindow();
             }
         }
     }
@@ -112,6 +120,12 @@ public class FloatingWindowService extends Service {
         }
     }
 
+    private void handleCloseAlertWindow() {
+        if(mAlertDialog.isShowing()) {
+            mAlertDialog.dismiss();
+        }
+    }
+
     /**
      * Handle action Baz in the provided background thread with the provided
      * parameters.
@@ -120,6 +134,12 @@ public class FloatingWindowService extends Service {
         if(!mOverlayDialog.isShowing()) {
             Log.d(TAG, "handleOpenOverlayWindow show overlay");
             mOverlayDialog.show();
+        }
+    }
+
+    private void handleCloseOverlayWindow() {
+        if(mOverlayDialog.isShowing()) {
+            mOverlayDialog.dismiss();
         }
     }
 }
