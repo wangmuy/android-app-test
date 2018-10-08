@@ -3,20 +3,27 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 24
     buildToolsVersion "24.0.1"
-/*
+
     signingConfigs {
-        platform {
-            try {
-                storeFile file(PLATFORM_STORE_FILE)
-                storePassword PLATFORM_STORE_PASSWORD
-                keyAlias PLATFORM_KEY_ALIAS
-                keyPassword PLATFORM_KEY_PASSWORD
-            } catch(e) {
-                throw new InvalidUserDataException("define PLATFORM_STORE_FILE/PLATFORM_STORE_PASSWORD/PLATFORM_KEY_ALIAS/PLATFORM_KEY_PASSWORD in gradle.properties")
-            }
-        }
+//        def keystorePropertiesFile = rootProject.file("keystore.properties")
+//        def keystoreProperties = new Properties()
+//        keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+//
+//        platform {
+//            // https://developer.android.com/studio/publish/app-signing?hl=zh-cn#secure-key
+//            // 项目的根目录下创建一个名为 keystore.properties 的文件(svn/git 忽略), 包含以下内容
+//            // PLATFORM_STORE_PASSWORD=myStorePassword
+//            // PLATFORM_KEY_PASSWORD=mykeyPassword
+//            // PLATFORM_KEY_ALIAS=myKeyAlias
+//            // PLATFORM_STORE_FILE=E\:\\project\\test\\platform.keystore
+//
+//            storeFile file(keystoreProperties['PLATFORM_STORE_FILE'])
+//            storePassword keystoreProperties['PLATFORM_STORE_PASSWORD']
+//            keyAlias keystoreProperties['PLATFORM_KEY_ALIAS']
+//            keyPassword keystoreProperties['PLATFORM_KEY_PASSWORD']
+//        }
     }
-*/
+
     defaultConfig {
         applicationId "com.example.test"
         minSdkVersion 19
