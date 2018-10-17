@@ -5,27 +5,70 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.example.test.model.Repo;
 import com.example.test.network.GitHubApi;
+import com.squareup.haha.perflib.Main;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.List;
 
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
+import io.reactivex.internal.subscriptions.ArrayCompositeSubscription;
+import io.reactivex.schedulers.Schedulers;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
+import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     private static final boolean AUTO_ASYNC = false;
+    private static final String USER = "wangmuy";
 
     private TextView mTextView;
-    private Call<List<Repo>> mRepos;
+    private Button mCallBtn;
+    private Button mRxBtn;
+
+    private GitHubApi mGithubService;
+    private Call<List<Repo>> mCallRepos;
+    private CompositeDisposable mAllDisposable = new CompositeDisposable();
+
+    private View.OnClickListener mCallBtnListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            mCallRepos = mGithubService.listRepos(USER);
+
+            if (AUTO_ASYNC) {
+                mCallRepos.enqueue(new RepoCallback(MainActivity.this));
+            } else {
+                new ManualThread(mCallRepos, MainActivity.this).start();
+            }
+        }
+    };
+
+    private View.OnClickListener mRxBtnListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Disposable d = mGithubService.rxListRepos(USER)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(
+                            (repos) -> RepoCallback.handleList(repos, MainActivity.this),
+                            (error) -> RepoCallback.handleError(error, MainActivity.this)
+                    );
+            mAllDisposable.add(d);
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,32 +76,31 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         mTextView = (TextView) findViewById(R.id.text);
         mTextView.setMovementMethod(new ScrollingMovementMethod());
+        mCallBtn = (Button) findViewById(R.id.callBtn);
+        mCallBtn.setOnClickListener(mCallBtnListener);
+        mRxBtn = (Button) findViewById(R.id.rxBtn);
+        mRxBtn.setOnClickListener(mRxBtnListener);
+
+        Retrofit retrofit = new Retrofit.Builder()
+            .baseUrl("https://api.github.com")
+            .addConverterFactory(GsonConverterFactory.create())
+            .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+            .build();
+        mGithubService = retrofit.create(GitHubApi.class);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://api.github.com")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        GitHubApi service = retrofit.create(GitHubApi.class);
-        mRepos = service.listRepos("wangmuy");
-
-        if (AUTO_ASYNC) {
-            mRepos.enqueue(new RepoCallback(this));
-        } else {
-            new ManualThread(mRepos, this).start();
-        }
     }
 
     protected void onPause() {
         super.onPause();
-        if (mRepos != null && mRepos.isExecuted()) {
+        if (mCallRepos != null && mCallRepos.isExecuted()) {
             Log.d(TAG, "onPause: isExecuted");
-            mRepos.cancel();
+            mCallRepos.cancel();
         }
+        mAllDisposable.clear();
     }
 
     static class RepoCallback implements Callback<List<Repo>> {
@@ -68,18 +110,26 @@ public class MainActivity extends AppCompatActivity {
             this.activityRef = new WeakReference<>(activity);
         }
 
-        @Override
-        public void onResponse(Call<List<Repo>> call, Response<List<Repo>> response) {
-            List<Repo> repos = response.body();
-            Log.d(TAG, "onResponse: " + response);
+        public static void handleList(List<Repo> repos, MainActivity activity) {
             StringBuilder sb = new StringBuilder();
             for (Repo r : repos) {
                 sb.append(r.toString());
             }
             final String repoListText = sb.toString();
+            activity.mTextView.setText(repoListText);
+        }
+
+        public static void handleError(Throwable t, MainActivity activity) {
+            activity.mTextView.setText(t.toString());
+        }
+
+        @Override
+        public void onResponse(Call<List<Repo>> call, Response<List<Repo>> response) {
+            List<Repo> repos = response.body();
+            Log.d(TAG, "onResponse: " + response);
             MainActivity activity = activityRef.get();
             if (activity != null) {
-                activity.mTextView.setText(repoListText);
+                handleList(repos, activity);
             }
         }
 
@@ -88,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "onFailure: " + t);
             MainActivity activity = activityRef.get();
             if (activity != null) {
-                activity.mTextView.setText(t.toString());
+                handleError(t, activity);
             }
         }
     }
