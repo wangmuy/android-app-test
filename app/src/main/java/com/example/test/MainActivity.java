@@ -87,6 +87,7 @@ public class MainActivity extends AppCompatActivity {
 
         // 参考实现 https://stackoverflow.com/questions/42634508/prevent-multiple-api-calls
         // 另, 根据 https://github.com/ReactiveX/RxJava/wiki/What%27s-different-in-2.0#when-to-use-observable 指出 Observable 足够处理 UI
+        // 另一种方法: 不用 take(1), flatMap 改为 switchMap. 不重新创建内部 observable, 可能是 switchMap 内部优化? 此方法可能不通用
         Disposable d = mRxBtnClickSubject
             .doOnNext(view -> Log.d(TAG, "--[RX]-- clicked"))
             .take(1)
