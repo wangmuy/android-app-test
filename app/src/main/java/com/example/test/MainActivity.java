@@ -11,7 +11,6 @@ import android.widget.TextView;
 
 import com.example.test.model.Repo;
 import com.example.test.network.GitHubApi;
-import com.squareup.haha.perflib.Main;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -20,9 +19,8 @@ import java.util.List;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Consumer;
-import io.reactivex.internal.subscriptions.ArrayCompositeSubscription;
 import io.reactivex.schedulers.Schedulers;
+import io.reactivex.subjects.PublishSubject;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -35,13 +33,13 @@ public class MainActivity extends AppCompatActivity {
     private static final boolean AUTO_ASYNC = false;
     private static final String USER = "wangmuy";
 
+    private String mTextContent = "";
     private TextView mTextView;
     private Button mCallBtn;
     private Button mRxBtn;
 
     private GitHubApi mGithubService;
     private Call<List<Repo>> mCallRepos;
-    private CompositeDisposable mAllDisposable = new CompositeDisposable();
 
     private View.OnClickListener mCallBtnListener = new View.OnClickListener() {
         @Override
@@ -56,19 +54,8 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private View.OnClickListener mRxBtnListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            Disposable d = mGithubService.rxListRepos(USER)
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(
-                            (repos) -> RepoCallback.handleList(repos, MainActivity.this),
-                            (error) -> RepoCallback.handleError(error, MainActivity.this)
-                    );
-            mAllDisposable.add(d);
-        }
-    };
+    private PublishSubject<View> mRxBtnClickSubject = PublishSubject.create();
+    private CompositeDisposable mAllDisposable = new CompositeDisposable();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
         mCallBtn = (Button) findViewById(R.id.callBtn);
         mCallBtn.setOnClickListener(mCallBtnListener);
         mRxBtn = (Button) findViewById(R.id.rxBtn);
-        mRxBtn.setOnClickListener(mRxBtnListener);
+        mRxBtn.setOnClickListener(v -> mRxBtnClickSubject.onNext(v));
 
         Retrofit retrofit = new Retrofit.Builder()
             .baseUrl("https://api.github.com")
@@ -92,6 +79,28 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        mTextContent = "";
+        mTextView.setText(mTextContent);
+
+        // https://stackoverflow.com/questions/42634508/prevent-multiple-api-calls
+        Disposable d = mRxBtnClickSubject
+                .doOnNext(view -> Log.d(TAG, "--[RX]-- clicked"))
+                .take(1)
+                .doOnNext(view -> Log.d(TAG, "--[RX]-- click taked"))
+                .observeOn(Schedulers.io())
+                .flatMap(view -> mGithubService.rxListRepos(USER).toObservable())
+                .firstOrError()
+                .doOnSubscribe((disposable) -> Log.d(TAG, "--[RX]-- onSubscribe: tid="+Thread.currentThread().toString()))
+                .doOnSuccess(repos -> Log.d(TAG, "--[RX]-- onSuccess: got repos, tid="+Thread.currentThread().toString()))
+                .doOnError((throwable) -> Log.e(TAG, "--[RX]-- onError: tid="+Thread.currentThread().toString(), throwable))
+                .observeOn(AndroidSchedulers.mainThread())
+                .repeat()
+                .retry()
+                .subscribe(
+                        (repos) -> RepoCallback.handleList(repos, MainActivity.this),
+                        (error) -> RepoCallback.handleError(error, MainActivity.this)
+                );
+        mAllDisposable.add(d);
     }
 
     protected void onPause() {
@@ -113,14 +122,17 @@ public class MainActivity extends AppCompatActivity {
         public static void handleList(List<Repo> repos, MainActivity activity) {
             StringBuilder sb = new StringBuilder();
             for (Repo r : repos) {
-                sb.append(r.toString());
+                sb.append(r.full_name).append("\n");
             }
+            sb.append("\n");
             final String repoListText = sb.toString();
-            activity.mTextView.setText(repoListText);
+            activity.mTextContent += repoListText;
+            activity.mTextView.setText(activity.mTextContent);
         }
 
         public static void handleError(Throwable t, MainActivity activity) {
-            activity.mTextView.setText(t.toString());
+            activity.mTextContent = t.toString();
+            activity.mTextView.setText(activity.mTextContent);
         }
 
         @Override
