@@ -85,7 +85,8 @@ public class MainActivity extends AppCompatActivity {
         mTextContent = "";
         mTextView.setText(mTextContent);
 
-        // https://stackoverflow.com/questions/42634508/prevent-multiple-api-calls
+        // 参考实现 https://stackoverflow.com/questions/42634508/prevent-multiple-api-calls
+        // 另, 根据 https://github.com/ReactiveX/RxJava/wiki/What%27s-different-in-2.0#when-to-use-observable 指出 Observable 足够处理 UI
         Disposable d = mRxBtnClickSubject
             .doOnNext(view -> Log.d(TAG, "--[RX]-- clicked"))
             .take(1)
