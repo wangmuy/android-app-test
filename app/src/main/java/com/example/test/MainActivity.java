@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import com.example.test.model.Repo;
 import com.example.test.network.GitHubApi;
+import com.example.test.network.Utils;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -34,7 +35,6 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     private static final boolean AUTO_ASYNC = false;
     private static final String USER = "wangmuy";
-    private static final int TOTAL_ATTEMPT = 3;
 
     private String mTextContent = "";
     private TextView mTextView;
@@ -85,6 +85,10 @@ public class MainActivity extends AppCompatActivity {
         mTextContent = "";
         mTextView.setText(mTextContent);
 
+        subscribeRxBtn();
+    }
+
+    private void subscribeRxBtn() {
         // 参考实现 https://stackoverflow.com/questions/42634508/prevent-multiple-api-calls
         // 另, 根据 https://github.com/ReactiveX/RxJava/wiki/What%27s-different-in-2.0#when-to-use-observable 指出 Observable 足够处理 UI
         // 另一种方法: 不用 take(1), flatMap 改为 switchMap. 不重新创建内部 observable, 可能是 switchMap 内部优化? 此方法可能不通用
@@ -95,16 +99,7 @@ public class MainActivity extends AppCompatActivity {
             .observeOn(Schedulers.io())
             .flatMap(view ->
                 mGithubService.rxListRepos(USER).toObservable()
-                    .doOnSubscribe((disposable) -> Log.d(TAG, "--[RX]-- netreq onSubscribe: tid="+Thread.currentThread().toString()))
-                    .doOnError((e) -> Log.e(TAG, "--[RX]-- netreq onError: tid="+Thread.currentThread().toString(), e))
-                    .retryWhen(throwableObs ->  // exponential back off
-                        throwableObs
-                        .zipWith(Observable.range(1, TOTAL_ATTEMPT), (throwable, attemptCount) ->
-                            attemptCount < TOTAL_ATTEMPT?
-                                Observable.timer(1 << (attemptCount-1), TimeUnit.SECONDS):
-                                Observable.error(throwable))
-                        .flatMap(x -> x)
-                    ))
+                    .compose(Utils.applyCommon()))
             .firstOrError()
             .observeOn(AndroidSchedulers.mainThread())
             .doOnSubscribe((disposable) -> Log.d(TAG, "--[RX]-- onSubscribe: tid="+Thread.currentThread().toString()))
