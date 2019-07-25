@@ -1,7 +1,10 @@
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-android'
+// apply plugin: 'kotlin-kapt'
 
 android {
-    compileSdkVersion 24
+    compileSdkVersion rootProject.ext.compileSdkVersion
 
     signingConfigs {
 //        def keystorePropertiesFile = rootProject.file("keystore.properties")
@@ -25,8 +28,8 @@ android {
 
     defaultConfig {
         applicationId "com.example.test"
-        minSdkVersion 19
-        targetSdkVersion 24
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
     }
@@ -45,6 +48,15 @@ android {
 dependencies {
     compileOnly fileTree(dir: 'extlibs', include: ['*.jar'])
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    testImplementation 'junit:junit:4.12'
-    implementation 'com.android.support:appcompat-v7:24.1.1'
+    testImplementation "junit:junit:$junitVersion"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation "androidx.appcompat:appcompat:$appCompatVersion"
+    implementation "androidx.legacy:legacy-support-v4:$androidXLegacySupport"
+
+    implementation "androidx.recyclerview:recyclerview:$recyclerViewVersion"
+    implementation "androidx.annotation:annotation:$androidXAnnotations"
+}
+
+repositories {
+    mavenCentral()
 }
