@@ -6,9 +6,10 @@ import com.example.test.util.schedulers.BaseSchedulerProvider
 import io.reactivex.disposables.CompositeDisposable
 
 class TasksPresenter(
-        val tasksView: TasksContract.View,
-        val getTasks: GetTasks,
-        val schedulerProvider: BaseSchedulerProvider): TasksContract.Presenter {
+        private val tasksView: TasksContract.View,
+        private val getTasks: GetTasks,
+        private val schedulerProvider: BaseSchedulerProvider)
+    : TasksContract.Presenter {
 
     private var firstLoad = true
     private val compositeDisposable: CompositeDisposable = CompositeDisposable()

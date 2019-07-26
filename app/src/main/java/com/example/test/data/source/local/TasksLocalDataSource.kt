@@ -37,7 +37,7 @@ class TasksLocalDataSource private constructor(private val tasksDao: TasksDao): 
         private var INSTANCE: TasksLocalDataSource? = null
 
         @JvmStatic
-        fun getInstance(appExecutors: AppExecutors, tasksDao: TasksDao): TasksLocalDataSource {
+        fun getInstance(tasksDao: TasksDao): TasksLocalDataSource {
             if (INSTANCE == null) {
                 synchronized(TasksLocalDataSource::javaClass) {
                     INSTANCE = TasksLocalDataSource(tasksDao)

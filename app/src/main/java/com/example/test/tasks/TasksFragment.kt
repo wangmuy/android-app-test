@@ -53,7 +53,7 @@ class TasksFragment: Fragment(), TasksContract.View {
     }
 
     override fun setLoadingIndicator(active: Boolean) {
-        Log.d(TAG, "setLoadingIndicator: " + active)
+        Log.d(TAG, "setLoadingIndicator: $active")
     }
 
     override fun showTasks(tasks: List<Task>) {

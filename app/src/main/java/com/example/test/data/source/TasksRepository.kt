@@ -4,8 +4,8 @@ import com.example.test.data.model.Task
 import io.reactivex.Flowable
 
 class TasksRepository(
-        val tasksRemoteDataSource: TasksDataSource,
-        val tasksLocalDataSource: TasksDataSource
+        private val tasksRemoteDataSource: TasksDataSource,
+        private val tasksLocalDataSource: TasksDataSource
 ): TasksDataSource {
     var cachedTasks: LinkedHashMap<String, Task> = LinkedHashMap()
     var cacheIsDirty = false
