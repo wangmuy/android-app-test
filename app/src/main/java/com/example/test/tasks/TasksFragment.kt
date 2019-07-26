@@ -26,7 +26,7 @@ class TasksFragment: Fragment(), TasksContract.View {
 
     internal var itemListener: TaskItemListener = object: TaskItemListener {
         override fun onTaskClick(clickedTask: Task) {
-            Log.d(TAG, "")
+            Log.d(TAG, "task clicked: $clickedTask")
         }
     }
 
