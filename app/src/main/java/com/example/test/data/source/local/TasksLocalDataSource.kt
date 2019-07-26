@@ -3,48 +3,30 @@ package com.example.test.data.source.local
 import com.example.test.data.model.Task
 import com.example.test.data.source.TasksDataSource
 import com.example.test.util.AppExecutors
+import io.reactivex.Flowable
 
-class TasksLocalDataSource private constructor(
-        val appExecutors: AppExecutors,
-        val tasksDao: TasksDao
-): TasksDataSource {
+class TasksLocalDataSource private constructor(private val tasksDao: TasksDao): TasksDataSource {
 
-    override fun getTaskList(callback: TasksDataSource.LoadTasksCallback) {
-        appExecutors.diskIO.execute {
-            val taskList = tasksDao.getTaskList()
-            appExecutors.mainThread.execute {
-                if (taskList.isEmpty()) {
-                    callback.onDataNotAvailable()
-                } else {
-                    callback.onTasksLoaded(taskList)
-                }
-            }
-        }
+    override fun getTaskList(): Flowable<List<Task>> {
+        val taskList = tasksDao.getTaskList()
+        return Flowable.just(taskList)
     }
 
-    override fun getTask(taskId: String, callback: TasksDataSource.GetTaskCallback) {
-        appExecutors.diskIO.execute {
-            val task = tasksDao.getTask(taskId)
-            appExecutors.mainThread.execute {
-                if (task != null) {
-                    callback.onTaskLoaded(task)
-                } else {
-                    callback.onDataNotAvailable()
-                }
-            }
-        }
+    override fun getTask(taskId: String): Flowable<Task?> {
+        val task = tasksDao.getTask(taskId)
+        return Flowable.just(task)
     }
 
-    override fun saveTask(task: Task) {
-        appExecutors.diskIO.execute { tasksDao.saveTask(task) }
+    override fun saveTask(task: Task): Int {
+        return tasksDao.saveTask(task)
     }
 
-    override fun deleteTask(taskId: String) {
-        appExecutors.diskIO.execute { tasksDao.deleteTask(taskId) }
+    override fun deleteTask(taskId: String): Int {
+        return tasksDao.deleteTask(taskId)
     }
 
-    override fun deleteAllTasks() {
-        appExecutors.diskIO.execute { tasksDao.deleteTasks() }
+    override fun deleteAllTasks(): Int {
+        return tasksDao.deleteTasks()
     }
 
     override fun refreshTasks() {
@@ -58,7 +40,7 @@ class TasksLocalDataSource private constructor(
         fun getInstance(appExecutors: AppExecutors, tasksDao: TasksDao): TasksLocalDataSource {
             if (INSTANCE == null) {
                 synchronized(TasksLocalDataSource::javaClass) {
-                    INSTANCE = TasksLocalDataSource(appExecutors, tasksDao)
+                    INSTANCE = TasksLocalDataSource(tasksDao)
                 }
             }
             return INSTANCE!!

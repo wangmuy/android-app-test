@@ -4,19 +4,25 @@ import com.example.test.UseCase
 import com.example.test.data.model.Task
 import com.example.test.data.source.TasksRepository
 import com.example.test.tasks.domain.usecase.GetTasks
+import io.reactivex.disposables.CompositeDisposable
 
 class TasksPresenter(
         val tasksView: TasksContract.View,
         val getTasks: GetTasks): TasksContract.Presenter {
 
     private var firstLoad = true
+    private val compositeDisposable: CompositeDisposable = CompositeDisposable()
 
     init {
         tasksView.presenter = this
     }
 
-    override fun start() {
+    override fun subscribe() {
         loadTasks(false)
+    }
+
+    override fun unsubscribe() {
+        compositeDisposable.clear()
     }
 
     override fun loadTasks(forceUpdate: Boolean) {
@@ -30,33 +36,31 @@ class TasksPresenter(
         }
 
         val requestValues = GetTasks.RequestValues(forceUpdate)
-        getTasks.setRequestValues(requestValues)
-        getTasks.setUseCaseCallback(object: UseCase.UseCaseCallback<GetTasks.ResponseValue> {
-            override fun onSuccess(response: GetTasks.ResponseValue) {
-                val tasks = response.getTasks()
-                val tasksToShow = ArrayList<Task>()
-                tasksToShow.addAll(tasks)
-                if (!tasksView.isActive) {
-                    return
-                }
-                if (showLoadingUI) {
-                    tasksView.setLoadingIndicator(false)
-                }
+        val disposable = getTasks.executeUseCase(requestValues).getTasks()
+                .subscribe(
+                        // onNext
+                        {
+                            if (tasksView.isActive) {
+                                if (showLoadingUI) {
+                                    tasksView.setLoadingIndicator(false)
+                                }
 
-                if (tasksToShow.isEmpty()) {
-                    tasksView.showNoTasks()
-                } else {
-                    tasksView.showTasks(tasksToShow)
-                }
-            }
-
-            override fun onError() {
-                if (!tasksView.isActive) {
-                    return
-                }
-                tasksView.showLoadingTasksError()
-            }
-        })
-        getTasks.executeUseCase(requestValues)
+                                if (it.isNotEmpty()) {
+                                    val tasksToShow = ArrayList<Task>()
+                                    tasksToShow.addAll(it)
+                                    tasksView.showTasks(tasksToShow)
+                                } else {
+                                    tasksView.showNoTasks()
+                                }
+                            }
+                        },
+                        // onError
+                        {
+                            if (tasksView.isActive) {
+                                tasksView.showLoadingTasksError()
+                            }
+                        }
+                )
+        compositeDisposable.add(disposable)
     }
 }

@@ -32,11 +32,6 @@ class TasksFragment: Fragment(), TasksContract.View {
 
     private val listAdapter = TasksAdapter(ArrayList(0), itemListener)
 
-    override fun onResume() {
-        super.onResume()
-        presenter.start()
-    }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val root = inflater.inflate(R.layout.tasks_frag, container, false)
         with (root) {
@@ -45,6 +40,16 @@ class TasksFragment: Fragment(), TasksContract.View {
             noTasksView = findViewById(R.id.noTasks)
         }
         return root
+    }
+
+    override fun onResume() {
+        super.onResume()
+        presenter.subscribe()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        presenter.unsubscribe()
     }
 
     override fun setLoadingIndicator(active: Boolean) {

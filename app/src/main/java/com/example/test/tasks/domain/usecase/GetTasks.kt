@@ -4,6 +4,7 @@ import com.example.test.UseCase
 import com.example.test.data.model.Task
 import com.example.test.data.source.TasksDataSource
 import com.example.test.data.source.TasksRepository
+import io.reactivex.Flowable
 
 // TODO: 将 TasksLocalDataSource/TasksRemoteDataSource 等的线程调用放在这里
 class GetTasks: UseCase<GetTasks.RequestValues, GetTasks.ResponseValue> {
@@ -13,21 +14,12 @@ class GetTasks: UseCase<GetTasks.RequestValues, GetTasks.ResponseValue> {
         mTasksRepository = tasksRepository
     }
 
-    override fun executeUseCase(requestValues: RequestValues) {
+    override fun executeUseCase(requestValues: RequestValues): ResponseValue {
         if (requestValues.isForceUpdate()) {
             mTasksRepository.refreshTasks()
         }
 
-        mTasksRepository.getTaskList(object: TasksDataSource.LoadTasksCallback {
-            override fun onTasksLoaded(tasks: List<Task>) {
-                val responseValue = ResponseValue(tasks)
-                getUseCaseCallback().onSuccess(responseValue)
-            }
-
-            override fun onDataNotAvailable() {
-                getUseCaseCallback().onError()
-            }
-        })
+        return ResponseValue(mTasksRepository.getTaskList())
     }
 
     class RequestValues: UseCase.RequestValues {
@@ -43,13 +35,13 @@ class GetTasks: UseCase<GetTasks.RequestValues, GetTasks.ResponseValue> {
     }
 
     class ResponseValue: UseCase.ResponseValue {
-        private val mTasks: List<Task>
+        private val mTasks: Flowable<List<Task>>
 
-        constructor(tasks: List<Task>) {
+        constructor(tasks: Flowable<List<Task>>) {
             mTasks = tasks
         }
 
-        fun getTasks(): List<Task> {
+        fun getTasks(): Flowable<List<Task>> {
             return mTasks
         }
     }

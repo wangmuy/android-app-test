@@ -1,8 +1,8 @@
 package com.example.test.data.source.remote
 
-import android.os.Handler
 import com.example.test.data.model.Task
 import com.example.test.data.source.TasksDataSource
+import io.reactivex.Flowable
 
 object TasksRemoteDataSource: TasksDataSource {
 
@@ -19,34 +19,31 @@ object TasksRemoteDataSource: TasksDataSource {
         TASKS_SERVICE_DATA.put(newTask.id, newTask)
     }
 
-    override fun getTask(taskId: String, callback: TasksDataSource.GetTaskCallback) {
+    override fun getTask(taskId: String): Flowable<Task?> {
         val task = TASKS_SERVICE_DATA[taskId]
-        with(Handler()) {
-            if (task != null) {
-                postDelayed({ callback.onTaskLoaded(task) }, SERVICE_LATENCY_IN_MILLIS)
-            } else {
-                postDelayed({ callback.onDataNotAvailable() }, SERVICE_LATENCY_IN_MILLIS)
-            }
-        }
+        Thread.sleep(SERVICE_LATENCY_IN_MILLIS)
+        return Flowable.just(task)
     }
 
-    override fun getTaskList(callback: TasksDataSource.LoadTasksCallback) {
+    override fun getTaskList(): Flowable<List<Task>> {
         val tasks = ArrayList(TASKS_SERVICE_DATA.values)
-        Handler().postDelayed({
-            callback.onTasksLoaded(tasks)
-        }, SERVICE_LATENCY_IN_MILLIS)
+        Thread.sleep(SERVICE_LATENCY_IN_MILLIS)
+        return Flowable.just(tasks)
     }
 
-    override fun saveTask(task: Task) {
+    override fun saveTask(task: Task): Int {
         TASKS_SERVICE_DATA.put(task.id, task)
+        return 1
     }
 
-    override fun deleteTask(taskId: String) {
+    override fun deleteTask(taskId: String): Int {
         TASKS_SERVICE_DATA.remove(taskId)
+        return 1
     }
 
-    override fun deleteAllTasks() {
+    override fun deleteAllTasks(): Int {
         TASKS_SERVICE_DATA.clear()
+        return 1
     }
 
     override fun refreshTasks() {

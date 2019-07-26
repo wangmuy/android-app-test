@@ -1,5 +1,6 @@
 package com.example.test
 
 interface BasePresenter {
-    fun start()
+    fun subscribe()
+    fun unsubscribe()
 }

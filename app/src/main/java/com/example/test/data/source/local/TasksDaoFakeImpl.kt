@@ -24,7 +24,8 @@ class TasksDaoFakeImpl: TasksDao {
         return if (oldTask != null) 1 else 0
     }
 
-    override fun deleteTasks() {
+    override fun deleteTasks(): Int {
         TASKS_SERVICE_DATA.clear()
+        return 1
     }
 }

@@ -7,5 +7,5 @@ interface TasksDao {
     fun getTask(taskId: String): Task?
     fun saveTask(task: Task): Int
     fun deleteTask(taskId: String): Int
-    fun deleteTasks()
+    fun deleteTasks(): Int
 }

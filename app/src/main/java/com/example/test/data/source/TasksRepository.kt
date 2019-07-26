@@ -1,6 +1,7 @@
 package com.example.test.data.source
 
 import com.example.test.data.model.Task
+import io.reactivex.Flowable
 
 class TasksRepository(
         val tasksRemoteDataSource: TasksDataSource,
@@ -9,76 +10,78 @@ class TasksRepository(
     var cachedTasks: LinkedHashMap<String, Task> = LinkedHashMap()
     var cacheIsDirty = false
 
-    override fun getTask(taskId: String, callback: TasksDataSource.GetTaskCallback) {
+    override fun getTask(taskId: String): Flowable<Task?> {
         val taskInCache = getTaskWithId(taskId)
 
         if (taskInCache != null) {
-            callback.onTaskLoaded(taskInCache)
-            return
+            return Flowable.just(taskInCache)
         }
 
-        tasksLocalDataSource.getTask(taskId, object: TasksDataSource.GetTaskCallback {
-            override fun onTaskLoaded(task: Task) {
-                cacheAndPerform(task) {
-                    callback.onTaskLoaded(it)
-                }
+        val localTask = tasksLocalDataSource.getTask(taskId).doOnNext{
+            if (it != null) {
+                cacheAndPerform(it, {})
             }
-
-            override fun onDataNotAvailable() {
-                tasksRemoteDataSource.getTask(taskId, object: TasksDataSource.GetTaskCallback {
-                    override fun onTaskLoaded(task: Task) {
-                        cacheAndPerform(task) {
-                            callback.onTaskLoaded(it)
-                        }
-                    }
-
-                    override fun onDataNotAvailable() {
-                        callback.onDataNotAvailable()
-                    }
-                })
+        }.firstElement().toFlowable()
+        val remoteTask = tasksRemoteDataSource.getTask(taskId).doOnNext {
+            if (it != null) {
+                cacheAndPerform(it, {})
             }
-        })
+        }
+        return Flowable.concat(localTask, remoteTask)
+                .firstElement()
+                .toFlowable()
     }
 
-    override fun getTaskList(callback: TasksDataSource.LoadTasksCallback) {
+    override fun getTaskList(): Flowable<List<Task>> {
         if (cachedTasks.isNotEmpty() && !cacheIsDirty) {
-            callback.onTasksLoaded(ArrayList(cachedTasks.values))
-            return
+            return Flowable.just(ArrayList(cachedTasks.values))
         }
 
-        if (cacheIsDirty) {
-            getTasksFromRemoteDataSource(callback)
-        } else {
-            tasksLocalDataSource.getTaskList(object: TasksDataSource.LoadTasksCallback {
-                override fun onTasksLoaded(tasks: List<Task>) {
-                    refreshCache(tasks)
-                    callback.onTasksLoaded(ArrayList(cachedTasks.values))
-                }
-
-                override fun onDataNotAvailable() {
-                    getTasksFromRemoteDataSource(callback)
-                }
-            })
-        }
-    }
-
-    override fun saveTask(task: Task) {
-        cacheAndPerform(task) {
-            tasksRemoteDataSource.saveTask(it)
-            tasksLocalDataSource.saveTask(it)
-        }
-    }
-
-    override fun deleteTask(taskId: String) {
-        tasksRemoteDataSource.deleteTask(taskId)
-        tasksLocalDataSource.deleteTask(taskId)
-        cachedTasks.remove(taskId)
-    }
-
-    override fun deleteAllTasks() {
-        tasksRemoteDataSource.deleteAllTasks()
-        tasksLocalDataSource.deleteAllTasks()
         cachedTasks.clear()
+        tasksLocalDataSource.deleteAllTasks()
+        val remoteTasks = tasksRemoteDataSource.getTaskList().doOnNext{
+            refreshCache(it)
+            refreshLocalDataSource(it)
+        }
+        if (cacheIsDirty) {
+            return remoteTasks
+        } else {
+            val localTasks = tasksLocalDataSource.getTaskList().doOnNext {
+                refreshCache(it)
+            }
+            return Flowable.concat(localTasks, remoteTasks)
+                    .filter{tasks -> tasks.isNotEmpty()}
+                    .firstOrError()
+                    .toFlowable()
+        }
+    }
+
+    override fun saveTask(task: Task): Int {
+        var localCount = 0
+        var remoteCount = 0
+        cacheAndPerform(task) {
+            remoteCount = tasksRemoteDataSource.saveTask(it)
+            localCount = tasksLocalDataSource.saveTask(it)
+        }
+        return localCount + remoteCount
+    }
+
+    override fun deleteTask(taskId: String): Int {
+        var localCount = 0
+        var remoteCount = 0
+        remoteCount = tasksRemoteDataSource.deleteTask(taskId)
+        localCount = tasksLocalDataSource.deleteTask(taskId)
+        cachedTasks.remove(taskId)
+        return localCount + remoteCount
+    }
+
+    override fun deleteAllTasks(): Int {
+        var localCount = 0
+        var remoteCount = 0
+        remoteCount = tasksRemoteDataSource.deleteAllTasks()
+        localCount = tasksLocalDataSource.deleteAllTasks()
+        cachedTasks.clear()
+        return localCount + remoteCount
     }
 
     override fun refreshTasks() {
@@ -86,20 +89,6 @@ class TasksRepository(
     }
 
     private fun getTaskWithId(id: String) = cachedTasks[id]
-
-    private fun getTasksFromRemoteDataSource(callback: TasksDataSource.LoadTasksCallback) {
-        tasksRemoteDataSource.getTaskList(object: TasksDataSource.LoadTasksCallback {
-            override fun onTasksLoaded(tasks: List<Task>) {
-                refreshCache(tasks)
-                refreshLocalDataSource(tasks)
-                callback.onTasksLoaded(ArrayList(cachedTasks.values))
-            }
-
-            override fun onDataNotAvailable() {
-                callback.onDataNotAvailable()
-            }
-        })
-    }
 
     private fun refreshCache(tasks: List<Task>) {
         cachedTasks.clear()
