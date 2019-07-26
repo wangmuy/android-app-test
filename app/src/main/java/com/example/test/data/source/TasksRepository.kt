@@ -19,12 +19,12 @@ class TasksRepository(
 
         val localTask = tasksLocalDataSource.getTask(taskId).doOnNext{
             if (it != null) {
-                cacheAndPerform(it, {})
+                cacheAndPerform(it) {}
             }
         }.firstElement().toFlowable()
         val remoteTask = tasksRemoteDataSource.getTask(taskId).doOnNext {
             if (it != null) {
-                cacheAndPerform(it, {})
+                cacheAndPerform(it) {}
             }
         }
         return Flowable.concat(localTask, remoteTask)

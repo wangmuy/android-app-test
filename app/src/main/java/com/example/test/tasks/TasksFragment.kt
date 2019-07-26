@@ -13,8 +13,9 @@ import androidx.fragment.app.Fragment
 import com.example.test.R
 import com.example.test.data.model.Task
 
+private const val TAG = "TasksFragment"
+
 class TasksFragment: Fragment(), TasksContract.View {
-    private val TAG = "TasksFragment"
 
     override lateinit var presenter: TasksContract.Presenter
 

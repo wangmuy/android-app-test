@@ -2,7 +2,6 @@ package com.example.test.data.source.local
 
 import com.example.test.data.model.Task
 import com.example.test.data.source.TasksDataSource
-import com.example.test.util.AppExecutors
 import io.reactivex.Flowable
 
 class TasksLocalDataSource private constructor(private val tasksDao: TasksDao): TasksDataSource {
