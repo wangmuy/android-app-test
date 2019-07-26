@@ -68,7 +68,7 @@ class TasksFragment: Fragment(), TasksContract.View {
     }
 
     override fun showLoadingTasksError() {
-        Toast.makeText(this.context, "Error while loading tasks", Toast.LENGTH_SHORT)
+        Toast.makeText(this.context, "Error while loading tasks", Toast.LENGTH_SHORT).show()
     }
 
     private class TasksAdapter(tasks: List<Task>, private val itemListener: TaskItemListener)

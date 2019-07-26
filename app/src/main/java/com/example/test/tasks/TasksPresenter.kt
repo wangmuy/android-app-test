@@ -1,14 +1,14 @@
 package com.example.test.tasks
 
-import com.example.test.UseCase
 import com.example.test.data.model.Task
-import com.example.test.data.source.TasksRepository
 import com.example.test.tasks.domain.usecase.GetTasks
+import com.example.test.util.schedulers.BaseSchedulerProvider
 import io.reactivex.disposables.CompositeDisposable
 
 class TasksPresenter(
         val tasksView: TasksContract.View,
-        val getTasks: GetTasks): TasksContract.Presenter {
+        val getTasks: GetTasks,
+        val schedulerProvider: BaseSchedulerProvider): TasksContract.Presenter {
 
     private var firstLoad = true
     private val compositeDisposable: CompositeDisposable = CompositeDisposable()
@@ -37,6 +37,8 @@ class TasksPresenter(
 
         val requestValues = GetTasks.RequestValues(forceUpdate)
         val disposable = getTasks.executeUseCase(requestValues).getTasks()
+                .subscribeOn(schedulerProvider.io())
+                .observeOn(schedulerProvider.ui())
                 .subscribe(
                         // onNext
                         {

@@ -18,8 +18,10 @@ class MainActivity: AppCompatActivity() {
             replaceFragmentInActivity(it, R.id.contentFrame)
         }
 
-        tasksPresenter = TasksPresenter(tasksFragment,
-                Injection.provideUseCaseGetTasks(applicationContext)).apply {
+        tasksPresenter = TasksPresenter(
+                tasksFragment,
+                Injection.provideUseCaseGetTasks(applicationContext),
+                Injection.providerSchedulerProvider()).apply {
             // empty
         }
     }
