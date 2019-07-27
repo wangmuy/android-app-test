@@ -5,9 +5,9 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.BaseAdapter
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.NonNull
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -94,18 +94,29 @@ class TasksFragment: Fragment(), TasksContract.View {
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val task = tasks[position]
-            holder.title.text = task.titleForList
-            holder.itemView.setOnClickListener { itemListener.onTaskClick(task) }
+            holder.bind(task)
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
             val itemView = LayoutInflater.from(parent.context)
                     .inflate(R.layout.task_item, parent, false)
-            return ViewHolder(itemView)
+            return ViewHolder(itemView, itemListener)
         }
 
-        private class ViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
-            val title: TextView = itemView.findViewById(R.id.title)
+        private class ViewHolder(itemView: View, val itemListener: TaskItemListener)
+            : RecyclerView.ViewHolder(itemView) {
+            lateinit var task: Task
+            val title: TextView
+
+            init {
+                title = itemView.findViewById(R.id.title)
+                itemView.setOnClickListener { itemListener.onTaskClick(task) }
+            }
+
+            fun bind(task: Task) {
+                this.task = task
+                title.text = task.titleForList
+            }
         }
     }
 
