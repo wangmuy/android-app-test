@@ -1,8 +1,12 @@
 package com.example.test.data.source.remote
 
+import android.util.Log
 import com.example.test.data.model.Task
 import com.example.test.data.source.TasksDataSource
 import io.reactivex.Flowable
+import java.util.concurrent.TimeUnit
+
+private const val TAG = "TasksRemoteDataSource"
 
 object TasksRemoteDataSource: TasksDataSource {
 
@@ -21,14 +25,16 @@ object TasksRemoteDataSource: TasksDataSource {
 
     override fun getTask(taskId: String): Flowable<Task?> {
         val task = TASKS_SERVICE_DATA[taskId]
-        Thread.sleep(SERVICE_LATENCY_IN_MILLIS)
         return Flowable.just(task)
+                .delay(SERVICE_LATENCY_IN_MILLIS, TimeUnit.MILLISECONDS)
     }
 
     override fun getTaskList(): Flowable<List<Task>> {
-        val tasks = ArrayList(TASKS_SERVICE_DATA.values)
-        Thread.sleep(SERVICE_LATENCY_IN_MILLIS)
-        return Flowable.just(tasks)
+        return Flowable.fromIterable(TASKS_SERVICE_DATA.values)
+                .delay(SERVICE_LATENCY_IN_MILLIS, TimeUnit.MILLISECONDS)
+                .toList()
+                .toFlowable()
+                .doOnNext { Log.d(TAG, "getTaskList tid=" + Thread.currentThread().id) }
     }
 
     override fun saveTask(task: Task): Int {

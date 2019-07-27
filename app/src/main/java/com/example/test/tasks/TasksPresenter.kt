@@ -1,10 +1,12 @@
 package com.example.test.tasks
 
+import android.util.Log
 import com.example.test.data.model.Task
 import com.example.test.tasks.domain.usecase.GetTasks
 import com.example.test.util.schedulers.BaseSchedulerProvider
 import io.reactivex.disposables.CompositeDisposable
 
+private const val TAG = "TasksPresenter"
 class TasksPresenter(
         private val tasksView: TasksContract.View,
         private val getTasks: GetTasks,
@@ -42,15 +44,16 @@ class TasksPresenter(
                 .observeOn(schedulerProvider.ui())
                 .subscribe(
                         // onNext
-                        {
+                        { tasks ->
+                            Log.d(TAG, "subscribe tid=" + Thread.currentThread().id)
                             if (tasksView.isActive) {
                                 if (showLoadingUI) {
                                     tasksView.setLoadingIndicator(false)
                                 }
 
-                                if (it.isNotEmpty()) {
+                                if (tasks.isNotEmpty()) {
                                     val tasksToShow = ArrayList<Task>()
-                                    tasksToShow.addAll(it)
+                                    tasksToShow.addAll(tasks)
                                     tasksView.showTasks(tasksToShow)
                                 } else {
                                     tasksView.showNoTasks()
@@ -58,9 +61,9 @@ class TasksPresenter(
                             }
                         },
                         // onError
-                        {
+                        { throwable ->
                             if (tasksView.isActive) {
-                                tasksView.showLoadingTasksError()
+                                tasksView.showLoadingTasksError(throwable.toString())
                             }
                         }
                 )

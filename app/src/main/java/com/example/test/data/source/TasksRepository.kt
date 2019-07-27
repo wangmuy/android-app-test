@@ -1,7 +1,10 @@
 package com.example.test.data.source
 
+import android.util.Log
 import com.example.test.data.model.Task
 import io.reactivex.Flowable
+
+private const val TAG = "TasksRepository"
 
 class TasksRepository(
         private val tasksRemoteDataSource: TasksDataSource,
@@ -37,8 +40,6 @@ class TasksRepository(
             return Flowable.just(ArrayList(cachedTasks.values))
         }
 
-        cachedTasks.clear()
-        tasksLocalDataSource.deleteAllTasks()
         val remoteTasks = tasksRemoteDataSource.getTaskList().doOnNext{
             refreshCache(it)
             refreshLocalDataSource(it)

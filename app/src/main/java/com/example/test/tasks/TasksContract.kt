@@ -15,6 +15,6 @@ interface TasksContract {
         fun setLoadingIndicator(active: Boolean)
         fun showTasks(tasks: List<Task>)
         fun showNoTasks()
-        fun showLoadingTasksError()
+        fun showLoadingTasksError(errStr: String)
     }
 }
