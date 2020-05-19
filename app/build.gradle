@@ -1,0 +1,65 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-android'
+// apply plugin: 'kotlin-kapt'
+
+android {
+    compileSdkVersion rootProject.ext.compileSdkVersion
+
+    signingConfigs {
+//        def keystorePropertiesFile = rootProject.file("keystore.properties")
+//        def keystoreProperties = new Properties()
+//        keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+//
+//        platform {
+//            // https://developer.android.com/studio/publish/app-signing?hl=zh-cn#secure-key
+//            // 项目的根目录下创建一个名为 keystore.properties 的文件(svn/git 忽略), 包含以下内容
+//            // PLATFORM_STORE_PASSWORD=myStorePassword
+//            // PLATFORM_KEY_PASSWORD=mykeyPassword
+//            // PLATFORM_KEY_ALIAS=myKeyAlias
+//            // PLATFORM_STORE_FILE=E\:\\project\\test\\platform.keystore
+//
+//            storeFile file(keystoreProperties['PLATFORM_STORE_FILE'])
+//            storePassword keystoreProperties['PLATFORM_STORE_PASSWORD']
+//            keyAlias keystoreProperties['PLATFORM_KEY_ALIAS']
+//            keyPassword keystoreProperties['PLATFORM_KEY_PASSWORD']
+//        }
+    }
+
+    defaultConfig {
+        applicationId "com.example.test"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    buildTypes.all {
+        //buildType -> buildType.signingConfig = signingConfigs.platform
+    }
+}
+
+dependencies {
+    compileOnly fileTree(dir: 'extlibs', include: ['*.jar'])
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    testImplementation "junit:junit:$junitVersion"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
+    implementation "androidx.appcompat:appcompat:$appCompatVersion"
+    implementation "androidx.legacy:legacy-support-v4:$androidXLegacySupport"
+
+    implementation "androidx.recyclerview:recyclerview:$recyclerViewVersion"
+    implementation "androidx.annotation:annotation:$androidXAnnotations"
+
+    implementation "io.reactivex.rxjava2:rxjava:$rxjavaVersion"
+    implementation "io.reactivex.rxjava2:rxandroid:$rxandroidVersion"
+}
+
+repositories {
+    mavenCentral()
+}
