@@ -1,6 +1,6 @@
 apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
 // apply plugin: 'kotlin-kapt'
 
 android {
@@ -32,7 +32,10 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -48,7 +51,15 @@ android {
 dependencies {
     compileOnly fileTree(dir: 'extlibs', include: ['*.jar'])
     implementation fileTree(dir: 'libs', include: ['*.jar'])
+
     testImplementation "junit:junit:$junitVersion"
+    androidTestImplementation "androidx.test:core:$androidXTestCoreVersion"
+    androidTestImplementation "androidx.test:runner:$androidXTestRunnerVersion"
+    androidTestImplementation "androidx.test:rules:$androidXTestRulesVersion"
+    androidTestImplementation "androidx.test.ext:junit:$androidXTestExtVersion"
+    androidTestImplementation "androidx.test.ext:truth:$androidXTestExtVersion"
+    androidTestImplementation "com.google.truth:truth:$googleTruthVersion"
+
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
     implementation "androidx.appcompat:appcompat:$appCompatVersion"
     implementation "androidx.legacy:legacy-support-v4:$androidXLegacySupport"
