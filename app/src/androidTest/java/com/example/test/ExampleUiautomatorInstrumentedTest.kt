@@ -19,6 +19,7 @@ private const val LAUNCH_TIMEOUT = 5000L
 
 /**
  * 注意: 可能需要设置手机, 允许后台启动应用
+ * @see <a href="https://developer.android.com/training/testing/ui-testing/uiautomator-testing">Test UI for multiple apps</a>
  */
 @RunWith(AndroidJUnit4::class)
 @SdkSuppress(minSdkVersion = 18)
