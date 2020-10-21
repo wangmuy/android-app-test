@@ -1,7 +1,6 @@
-package com.example.test.data.source
+package com.example.test.tasks.data.source
 
-import android.util.Log
-import com.example.test.data.model.Task
+import com.example.test.tasks.data.model.Task
 import io.reactivex.Flowable
 
 private const val TAG = "TasksRepository"

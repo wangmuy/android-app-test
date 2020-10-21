@@ -11,16 +11,16 @@ class MainActivity: AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.tasks_activity_main)
 
-        val tasksFragment = supportFragmentManager.findFragmentById(R.id.contentFrame)
+        val tasksFragment = supportFragmentManager.findFragmentById(R.id.tasks_contentFrame)
             as TasksFragment? ?: TasksFragment.newInstance().also {
-            replaceFragmentInActivity(it, R.id.contentFrame)
+            replaceFragmentInActivity(it, R.id.tasks_contentFrame)
         }
 
         tasksPresenter = TasksPresenter(
                 tasksFragment,
-                Injection.provideUseCaseGetTasks(applicationContext),
+                TasksInjection.provideUseCaseGetTasks(applicationContext),
                 Injection.providerSchedulerProvider()).apply {
             // empty
         }

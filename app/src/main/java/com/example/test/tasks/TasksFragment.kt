@@ -7,12 +7,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
-import androidx.annotation.NonNull
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.test.R
-import com.example.test.data.model.Task
+import com.example.test.tasks.data.model.Task
 
 private const val TAG = "TasksFragment"
 
@@ -99,7 +98,7 @@ class TasksFragment: Fragment(), TasksContract.View {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
             val itemView = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.task_item, parent, false)
+                    .inflate(R.layout.tasks_item, parent, false)
             return ViewHolder(itemView, itemListener)
         }
 

@@ -2,7 +2,7 @@ package com.example.test.tasks
 
 import com.example.test.BasePresenter
 import com.example.test.BaseView
-import com.example.test.data.model.Task
+import com.example.test.tasks.data.model.Task
 
 interface TasksContract {
 
