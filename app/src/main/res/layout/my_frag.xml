@@ -6,10 +6,29 @@
     android:clickable="true"
     android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/my_frag_textView1"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="empty"/>
+        android:orientation="horizontal">
+        <Button
+            android:id="@+id/my_test_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="test" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <ScrollView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent">
+            <TextView
+                android:id="@+id/my_frag_textView1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="empty"/>
+        </ScrollView>
+    </FrameLayout>
 
 </LinearLayout>

@@ -34,6 +34,10 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        ndk {
+            abiFilters 'arm64-v8a'
+        }
     }
 
     buildTypes {
@@ -70,6 +74,8 @@ dependencies {
 
     implementation "io.reactivex.rxjava2:rxjava:$rxjavaVersion"
     implementation "io.reactivex.rxjava2:rxandroid:$rxandroidVersion"
+
+    implementation "com.eclipsesource.j2v8:j2v8:6.2.0@aar"
 }
 
 repositories {
