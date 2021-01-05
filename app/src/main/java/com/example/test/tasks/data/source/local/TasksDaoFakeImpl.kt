@@ -1,6 +1,6 @@
-package com.example.test.data.source.local
+package com.example.test.tasks.data.source.local
 
-import com.example.test.data.model.Task
+import com.example.test.tasks.data.model.Task
 
 class TasksDaoFakeImpl: TasksDao {
     private var TASKS_SERVICE_DATA = LinkedHashMap<String, Task>(2)

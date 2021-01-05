@@ -1,7 +1,6 @@
-package com.example.test.data.source
+package com.example.test.tasks.data.source
 
-import android.util.Log
-import com.example.test.data.model.Task
+import com.example.test.tasks.data.model.Task
 import io.reactivex.Flowable
 
 private const val TAG = "TasksRepository"
@@ -68,19 +67,15 @@ class TasksRepository(
     }
 
     override fun deleteTask(taskId: String): Int {
-        var localCount = 0
-        var remoteCount = 0
-        remoteCount = tasksRemoteDataSource.deleteTask(taskId)
-        localCount = tasksLocalDataSource.deleteTask(taskId)
+        var remoteCount = tasksRemoteDataSource.deleteTask(taskId)
+        var localCount = tasksLocalDataSource.deleteTask(taskId)
         cachedTasks.remove(taskId)
         return localCount + remoteCount
     }
 
     override fun deleteAllTasks(): Int {
-        var localCount = 0
-        var remoteCount = 0
-        remoteCount = tasksRemoteDataSource.deleteAllTasks()
-        localCount = tasksLocalDataSource.deleteAllTasks()
+        var remoteCount = tasksRemoteDataSource.deleteAllTasks()
+        var localCount = tasksLocalDataSource.deleteAllTasks()
         cachedTasks.clear()
         return localCount + remoteCount
     }

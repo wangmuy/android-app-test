@@ -1,8 +1,8 @@
-package com.example.test.data.source.remote
+package com.example.test.tasks.data.source.remote
 
 import android.util.Log
-import com.example.test.data.model.Task
-import com.example.test.data.source.TasksDataSource
+import com.example.test.tasks.data.model.Task
+import com.example.test.tasks.data.source.TasksDataSource
 import io.reactivex.Flowable
 import java.util.concurrent.TimeUnit
 

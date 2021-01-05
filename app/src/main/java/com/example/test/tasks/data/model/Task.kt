@@ -1,4 +1,4 @@
-package com.example.test.data.model
+package com.example.test.tasks.data.model
 
 import java.util.*
 

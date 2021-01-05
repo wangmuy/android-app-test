@@ -1,7 +1,7 @@
 package com.example.test.tasks
 
 import android.util.Log
-import com.example.test.data.model.Task
+import com.example.test.tasks.data.model.Task
 import com.example.test.tasks.domain.usecase.GetTasks
 import com.example.test.util.schedulers.BaseSchedulerProvider
 import io.reactivex.disposables.CompositeDisposable

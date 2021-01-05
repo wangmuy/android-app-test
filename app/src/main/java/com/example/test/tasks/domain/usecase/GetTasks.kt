@@ -1,8 +1,8 @@
 package com.example.test.tasks.domain.usecase
 
 import com.example.test.UseCase
-import com.example.test.data.model.Task
-import com.example.test.data.source.TasksRepository
+import com.example.test.tasks.data.model.Task
+import com.example.test.tasks.data.source.TasksRepository
 import io.reactivex.Flowable
 
 class GetTasks(private val mTasksRepository: TasksRepository)
