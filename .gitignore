@@ -7,3 +7,5 @@
 /captures
 /gradle.properties
 /app/.externalNativeBuild
+GitCredentialManager/
+app/.cxx/
