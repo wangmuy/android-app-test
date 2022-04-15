@@ -15,9 +15,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         TextView tv = (TextView)findViewById(R.id.textview);
-        String s1 = NativeUtils.getCString();
         String s2 = RustLib.hello("rust jni");
-        tv.setText(s1+"\n"+s2);
+        tv.setText(s2);
     }
 
     @Override

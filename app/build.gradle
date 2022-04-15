@@ -30,12 +30,13 @@ android {
                 arguments "-DANDROID_ARM_NEON=TRUE", "-DANDROID_TOOLCHAIN=clang"
                 cFlags "-D_EXAMPLE_C_FLAG1", "-D_EXAMPLE_C_FLAG2"
                 cppFlags "-D__STDC_FORMAT_MACROS"
+                targets "rustrocks"
             }
         }
 
         ndk {
             //moduleName "NativeUtils" // in Android.mk
-            abiFilters "arm64-v8a"
+            abiFilters "armeabi-v7a", "arm64-v8a"
         }
     }
 
