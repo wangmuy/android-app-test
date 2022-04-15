@@ -36,3 +36,10 @@ target_link_libraries( # Specifies the target library.
     # Links the log library to the target library.
     ${log-lib}
 )
+
+add_custom_target(
+        rustlibCompile
+        COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR}/rust && cargo build --release
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/rust/target/aarch64-linux-android/release/librustlib.so ${CMAKE_CURRENT_SOURCE_DIR}/../jniLibs/arm64-v8a/
+)
+add_dependencies(NativeUtils rustlibCompile)
