@@ -11,7 +11,7 @@ panic = "abort"
 
 [dependencies]
 jni = "0.19.0"
-wasmtime = {version = "0.35.0", default-features = false, features = ["async","async-trait","cache","cranelift","jitdump","parallel-compilation","rayon","vtune","wasmtime-cache","wasmtime-cranelift","wasmtime-fiber","wat"]}
+wasmtime = {version = "0.35.0", default-features = false, features = ["cranelift"]}
 
 [lib]
 crate-type=["dylib"]
