@@ -6,4 +6,6 @@ public class RustLib {
     }
 
     public static native String hello(String input);
+
+    public static native int callWasm(String absFilePath);
 }
