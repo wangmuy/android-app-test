@@ -1,0 +1,15 @@
+[package]
+name = "hello-world"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+
+[dev-dependencies]
+wasmtime = {version = "0.35.0", default-features = false, features = ["async","async-trait","cache","cranelift","jitdump","parallel-compilation","rayon","vtune","wasmtime-cache","wasmtime-cranelift","wasmtime-fiber","wat"]}
+
+[lib]
+crate-type = ["cdylib"]
+
+[[example]]
+name = "callwasm"

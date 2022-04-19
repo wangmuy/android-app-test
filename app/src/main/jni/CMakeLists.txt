@@ -24,12 +24,12 @@ if(NOT DEFINED CARGO_BUILD_TYPE)
     endif()
 endif()
 if(CARGO_BUILD_TYPE STREQUAL release)
-    set(CARGO_FLAGS ${CARGO_FLAGS} --${CARGO_BUILD_TYPE})
+    set(CARGO_BUILD_TYPE_FLAG --${CARGO_BUILD_TYPE})
 endif()
+
 add_custom_target(
-        ${CARGO_LIB_NAME} ALL
-        COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR}/rust && cargo build ${CARGO_FLAGS}
+        ${CARGO_LIB_NAME}
+        COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR}/rust && cargo ndk ${CARGO_FLAGS} build ${CARGO_BUILD_TYPE_FLAG}
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_SOURCE_DIR}/../jniLibs/${ANDROID_ABI}
         COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/rust/target/${CARGO_ABI}/${CARGO_BUILD_TYPE}/lib${CARGO_LIB_NAME}.so ${CMAKE_CURRENT_SOURCE_DIR}/../jniLibs/${ANDROID_ABI}/
 )
-
