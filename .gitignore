@@ -9,4 +9,4 @@
 /app/.externalNativeBuild
 GitCredentialManager/
 app/.cxx/
-app/src/main/jni/rust/target
+target/
