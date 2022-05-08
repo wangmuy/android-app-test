@@ -1,6 +1,5 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
 // apply plugin: 'kotlin-kapt'
 apply from: '../versions.gradle'
 
@@ -33,6 +32,8 @@ android {
         targetSdkVersion versions.targetSdk
         versionCode 1
         versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
@@ -49,7 +50,7 @@ android {
 dependencies {
     compileOnly fileTree(dir: 'extlibs', include: ['*.jar'])
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    testImplementation deps.junit
+
     implementation deps.kotlin.stdlib
     implementation deps.androidx.appcompat
 
@@ -58,6 +59,13 @@ dependencies {
 
     implementation deps.rxjava2.rxjava
     implementation deps.rxjava2.rxandroid
+
+    testImplementation deps.junit
+    androidTestImplementation deps.androidx.test.core
+    androidTestImplementation deps.androidx.test.runner
+    androidTestImplementation deps.androidx.test.rules
+    androidTestImplementation deps.androidx.test.ext.junit
+    androidTestImplementation deps.androidx.test.ext.truth
 }
 
 repositories {
