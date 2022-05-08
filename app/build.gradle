@@ -2,9 +2,10 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 // apply plugin: 'kotlin-kapt'
+apply from: '../versions.gradle'
 
 android {
-    compileSdkVersion rootProject.ext.compileSdkVersion
+    compileSdkVersion versions.compileSdk
 
     signingConfigs {
 //        def keystorePropertiesFile = rootProject.file("keystore.properties")
@@ -28,8 +29,8 @@ android {
 
     defaultConfig {
         applicationId "com.example.test"
-        minSdkVersion rootProject.ext.minSdkVersion
-        targetSdkVersion rootProject.ext.targetSdkVersion
+        minSdkVersion versions.minSdk
+        targetSdkVersion versions.targetSdk
         versionCode 1
         versionName "1.0"
     }
@@ -48,16 +49,15 @@ android {
 dependencies {
     compileOnly fileTree(dir: 'extlibs', include: ['*.jar'])
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    testImplementation "junit:junit:$junitVersion"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
-    implementation "androidx.appcompat:appcompat:$appCompatVersion"
-    implementation "androidx.legacy:legacy-support-v4:$androidXLegacySupport"
+    testImplementation deps.junit
+    implementation deps.kotlin.stdlib
+    implementation deps.androidx.appcompat
 
-    implementation "androidx.recyclerview:recyclerview:$recyclerViewVersion"
-    implementation "androidx.annotation:annotation:$androidXAnnotations"
+    implementation deps.androidx.recyclerview
+    implementation deps.androidx.annotation
 
-    implementation "io.reactivex.rxjava2:rxjava:$rxjavaVersion"
-    implementation "io.reactivex.rxjava2:rxandroid:$rxandroidVersion"
+    implementation deps.rxjava2.rxjava
+    implementation deps.rxjava2.rxandroid
 }
 
 repositories {
