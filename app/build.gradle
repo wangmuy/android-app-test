@@ -1,0 +1,74 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+
+apply from: "../version.gradle"
+
+android {
+    namespace 'com.wangmuy.modulartest'
+    compileSdk vers.compileSdk
+
+    defaultConfig {
+        applicationId "com.wangmuy.modulartest"
+        minSdk vers.minSdk
+        targetSdk vers.targetSdk
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        vectorDrawables {
+            useSupportLibrary true
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility vers.sourceCompat
+        targetCompatibility vers.targetCompat
+    }
+    kotlinOptions {
+        jvmTarget = vers.kotlin.jvmTarget
+    }
+    buildFeatures {
+        compose true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion vers.kotlin.compilerExt
+    }
+    packagingOptions {
+        resources {
+            excludes += '/META-INF/{AL2.0,LGPL2.1}'
+        }
+    }
+}
+
+dependencies {
+    implementation project(":base")
+    implementation project(":feat1:di")
+    implementation project(":feat2:di")
+
+    implementation libs.koin.android
+
+    implementation libs.androidx.core.ktx
+    implementation platform(libs.kotlin.bom)
+    implementation libs.androidx.lifecycle.runtimeKtx
+    implementation libs.androidx.activity.compose
+    implementation platform(libs.androidx.compose.bom)
+    implementation libs.androidx.compose.ui
+    implementation libs.androidx.compose.uiGraphics
+    implementation libs.androidx.compose.uiToolingPreview
+    implementation libs.androidx.compose.material3
+    testImplementation libs.junit.junit
+    androidTestImplementation libs.androidx.test.ext.junit
+    androidTestImplementation libs.androidx.test.expresso.core
+    androidTestImplementation platform(libs.androidx.compose.bom)
+    androidTestImplementation libs.androidx.compose.uiTestJunit4
+    debugImplementation libs.androidx.compose.uiTooling
+    debugImplementation libs.androidx.compose.uiTestManifest
+}

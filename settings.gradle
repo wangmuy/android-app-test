@@ -1,0 +1,23 @@
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+rootProject.name = "modulartest"
+include ":app"
+include ":base"
+include ":feat1:api"
+include ":feat1:impl"
+include ":feat1:di"
+include ":feat2:api"
+include ":feat2:impl"
+include ":feat2:di"
