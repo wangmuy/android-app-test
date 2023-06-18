@@ -23,7 +23,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        loadKoinModules(appModule)
+//        loadKoinModules(appModule)
         setContent {
             Greeting("Android")
         }
@@ -39,7 +39,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        unloadKoinModules(appModule)
+//        unloadKoinModules(appModule)
     }
 }
 
