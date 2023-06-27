@@ -1,0 +1,45 @@
+plugins {
+    id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
+}
+
+apply from: "../../version.gradle"
+
+android {
+    namespace 'com.wangmuy.modulartest.feat3.di'
+    compileSdk vers.compileSdk
+
+    defaultConfig {
+        minSdk vers.minSdk
+        targetSdk vers.targetSdk
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        vectorDrawables {
+            useSupportLibrary true
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility vers.sourceCompat
+        targetCompatibility vers.targetCompat
+    }
+    kotlinOptions {
+        jvmTarget = vers.kotlin.jvmTarget
+    }
+}
+
+dependencies {
+    api project(":feat3:api")
+    implementation "com.wangmuy:implaar"
+
+    implementation libs.koin.android
+
+    implementation libs.androidx.core.ktx
+    implementation platform(libs.kotlin.bom)
+    implementation libs.androidx.lifecycle.runtimeKtx
+    testImplementation libs.junit.junit
+    androidTestImplementation libs.androidx.test.ext.junit
+    androidTestImplementation libs.androidx.test.expresso.core
+}

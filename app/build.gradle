@@ -52,6 +52,7 @@ dependencies {
     implementation project(":base")
     implementation project(":feat1:di")
     implementation project(":feat2:di")
+    implementation project(":feat3:di")
 
     implementation libs.koin.android
 

@@ -10,9 +10,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.wangmuy.modulartest.Const.DEBUG_TAG
 import com.wangmuy.modulartest.feat2.IFeat2
+import com.wangmuy.modulartest.feat3.Feat3Biz
+import com.wangmuy.modulartest.feat3.IFeat3
 import org.koin.android.ext.android.inject
-import org.koin.core.context.loadKoinModules
-import org.koin.core.context.unloadKoinModules
 
 class MainActivity : ComponentActivity() {
     companion object {
@@ -20,6 +20,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private val feat2: IFeat2 by inject()
+    private val feat3: IFeat3 by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,10 +32,16 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        val result = feat2.doFeat2("yo")
-        Log.d(TAG, "result=$result")
-        // val feat1Impl: Feat1Impl? = null // error
-        // val feat2Impl: Feat2Impl? = null // error
+        try {
+            val feat2Result = feat2.doFeat2("yo")
+            val feat3Biz = Feat3Biz("key", "yo")
+            val feat3Result = feat3.doFeat3(feat3Biz)
+            Log.d(TAG, "feat2Result=$feat2Result, feat3Result=$feat3Result")
+            // val feat1Impl: Feat1Impl? = null // error
+            // val feat2Impl: Feat2Impl? = null // error
+        } catch (t: Throwable) {
+            Log.e(TAG, "", t)
+        }
     }
 
     override fun onDestroy() {
