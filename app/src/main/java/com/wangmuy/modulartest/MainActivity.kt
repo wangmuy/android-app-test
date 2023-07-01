@@ -12,6 +12,9 @@ import com.wangmuy.modulartest.Const.DEBUG_TAG
 import com.wangmuy.modulartest.feat2.IFeat2
 import com.wangmuy.modulartest.feat3.Feat3Biz
 import com.wangmuy.modulartest.feat3.IFeat3
+import com.wangmuy.modulartest.feat3.loadFeat32Module
+import com.wangmuy.modulartest.feat3.unloadFeat32Module
+import org.koin.android.ext.android.getKoin
 import org.koin.android.ext.android.inject
 
 class MainActivity : ComponentActivity() {
@@ -20,7 +23,6 @@ class MainActivity : ComponentActivity() {
     }
 
     private val feat2: IFeat2 by inject()
-    private val feat3: IFeat3 by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,13 +36,34 @@ class MainActivity : ComponentActivity() {
         super.onResume()
         try {
             val feat2Result = feat2.doFeat2("yo")
-            val feat3Biz = Feat3Biz("key", "yo")
-            val feat3Result = feat3.doFeat3(feat3Biz)
-            Log.d(TAG, "feat2Result=$feat2Result, feat3Result=$feat3Result")
+            Log.d(TAG, "feat2Result=$feat2Result")
             // val feat1Impl: Feat1Impl? = null // error
             // val feat2Impl: Feat2Impl? = null // error
+
+            // https://stackoverflow.com/a/60508841
+            val feat3Biz = Feat3Biz("key", "yo")
+            var feat3List: List<IFeat3> = getKoin().getAll()
+            Log.d(TAG, "initial feat3 List.size=${feat3List.size}")
+            doFeat3List(feat3Biz, feat3List)
+
+            loadFeat32Module()
+            feat3List = getKoin().getAll()
+            Log.d(TAG, "load feat32 List.size=${feat3List.size}")
+            doFeat3List(feat3Biz, feat3List)
+
+            unloadFeat32Module()
+            feat3List = getKoin().getAll()
+            Log.d(TAG, "unload feat32 List.size=${feat3List.size}")
+            doFeat3List(feat3Biz, feat3List)
         } catch (t: Throwable) {
             Log.e(TAG, "", t)
+        }
+    }
+
+    private fun doFeat3List(feat3Biz: Feat3Biz, feat3List: List<IFeat3>) {
+        feat3List.forEach {feat3->
+            val feat3Result = feat3.doFeat3(feat3Biz)
+            Log.d(TAG, "feat3=$feat3, feat3Result=$feat3Result")
         }
     }
 

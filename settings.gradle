@@ -24,3 +24,5 @@ include ":feat2:di"
 include ":feat3:api"
 include ":feat3:di"
 includeBuild './feat3/implaar'
+include ":feat32:di"
+includeBuild './feat32/impl2aar'

@@ -6,5 +6,9 @@ import com.wangmuy.modulartest.feat3.feat3Module
 import org.koin.dsl.module
 
 val appModule = module {
-    includes(listOf(feat1Module, feat2Module, feat3Module))
+    includes(listOf(
+        feat1Module,
+        feat2Module,
+        feat3Module,
+    ))
 }
