@@ -14,4 +14,8 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "TestEmpty"
-include ':app'
+include ":app"
+include ":base"
+include ":feat1:api"
+include ":feat1:impl"
+include ":feat1:di"

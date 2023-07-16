@@ -1,31 +1,21 @@
 plugins {
-    id 'com.android.application'
+    id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
-    id 'org.jetbrains.kotlin.kapt'
 }
 
-apply from: "../versions.gradle"
+apply from: "../../versions.gradle"
 
 android {
-    namespace 'com.wangmuy.testempty'
+    namespace 'com.wangmuy.testempty.feat1.api'
     compileSdk vers.compileSdk
 
     defaultConfig {
-        applicationId "com.wangmuy.testempty"
         minSdk vers.minSdk
         targetSdk vers.targetSdk
-        versionCode 1
-        versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
-    }
     compileOptions {
         sourceCompatibility vers.sourceCompat
         targetCompatibility vers.targetCompat
@@ -37,15 +27,8 @@ android {
 
 dependencies {
     implementation project(":base")
-    implementation project(":feat1:di")
-
-    implementation libs.dagger.dagger
-    kapt libs.dagger.compiler
 
     implementation libs.androidx.core.ktx
-    implementation libs.androidx.appcompat
-    implementation libs.android.material
-    implementation libs.androidx.constraintlayout
     testImplementation libs.junit.junit
     androidTestImplementation libs.androidx.test.ext.junit
     androidTestImplementation libs.androidx.test.expresso.core
