@@ -38,6 +38,9 @@ android {
 dependencies {
     implementation project(":base")
     implementation project(":feat1:di")
+    implementation project(":feat2:di")
+    implementation project(":feat3:di")
+    implementation project(":feat32:di")
 
     implementation libs.dagger.dagger
     kapt libs.dagger.compiler

@@ -17,6 +17,6 @@ open class Item(val name: String) {
     }
 
     override fun toString(): String {
-        return "Item(name='$name')"
+        return "Item(name='$name', id=${System.identityHashCode(this)})"
     }
 }

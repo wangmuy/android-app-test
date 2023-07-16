@@ -22,7 +22,7 @@ data class Feat1Item(val x: Int): Item(Feat1Impl.TAG) {
     }
 
     override fun toString(): String {
-        return "Feat1Item(x=$x, name=$name)"
+        return "Feat1Item(x=$x, name=$name, id=${System.identityHashCode(this)})"
     }
 
 

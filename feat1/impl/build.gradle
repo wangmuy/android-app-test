@@ -1,7 +1,6 @@
 plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
-    id 'org.jetbrains.kotlin.kapt'
 }
 
 apply from: "../../versions.gradle"
@@ -29,9 +28,6 @@ android {
 dependencies {
     api project(":feat1:api")
     implementation project(":base")
-
-    implementation libs.dagger.dagger
-    kapt libs.dagger.compiler
 
     implementation libs.kotlinx.coroutines.core
     implementation libs.kotlinx.coroutines.android

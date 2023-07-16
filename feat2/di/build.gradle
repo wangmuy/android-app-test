@@ -1,0 +1,43 @@
+plugins {
+    id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
+    id 'org.jetbrains.kotlin.kapt'
+}
+
+apply from: "../../versions.gradle"
+
+android {
+    namespace 'com.wangmuy.testempty.feat2.di'
+    compileSdk vers.compileSdk
+
+    defaultConfig {
+        minSdk vers.minSdk
+        targetSdk vers.targetSdk
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    compileOptions {
+        sourceCompatibility vers.sourceCompat
+        targetCompatibility vers.targetCompat
+    }
+    kotlinOptions {
+        jvmTarget = vers.kotlin.jvmTarget
+    }
+}
+
+dependencies {
+    implementation project(":base")
+
+    api project(":feat2:api")
+    implementation project(":feat1:api")
+    implementation project(":feat2:impl")
+
+    implementation libs.dagger.dagger
+    kapt libs.dagger.compiler
+
+    implementation libs.androidx.core.ktx
+    testImplementation libs.junit.junit
+    androidTestImplementation libs.androidx.test.ext.junit
+    androidTestImplementation libs.androidx.test.expresso.core
+}

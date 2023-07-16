@@ -19,3 +19,11 @@ include ":base"
 include ":feat1:api"
 include ":feat1:impl"
 include ":feat1:di"
+include ":feat2:api"
+include ":feat2:impl"
+include ":feat2:di"
+include ":feat3:api"
+include ":feat3:di"
+includeBuild './feat3/implaar'
+include ":feat32:di"
+includeBuild './feat32/impl2aar'

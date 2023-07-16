@@ -1,0 +1,37 @@
+plugins {
+    id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
+}
+
+apply from: "../../../versions.gradle"
+
+group 'com.wangmuy'
+
+android {
+    namespace 'com.wangmuy.testempty.feat3.impl2'
+    compileSdk vers.compileSdk
+
+    defaultConfig {
+        minSdk vers.minSdk
+        targetSdk vers.targetSdk
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    compileOptions {
+        sourceCompatibility vers.sourceCompat
+        targetCompatibility vers.targetCompat
+    }
+    kotlinOptions {
+        jvmTarget = vers.kotlin.jvmTarget
+    }
+}
+
+dependencies {
+    compileOnly project(":api")
+
+    implementation libs.androidx.core.ktx
+    testImplementation libs.junit.junit
+    androidTestImplementation libs.androidx.test.ext.junit
+    androidTestImplementation libs.androidx.test.expresso.core
+}
