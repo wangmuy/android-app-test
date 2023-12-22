@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 24
+    compileSdk 33
 
     signingConfigs {
 //        def keystorePropertiesFile = rootProject.file("keystore.properties")
@@ -26,7 +26,7 @@ android {
     defaultConfig {
         applicationId "com.example.test"
         minSdkVersion 19
-        targetSdkVersion 24
+        targetSdkVersion 33
         versionCode 1
         versionName "1.0"
     }
@@ -36,6 +36,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    namespace 'com.example.test'
 
     buildTypes.all {
         //buildType -> buildType.signingConfig = signingConfigs.platform
@@ -45,6 +46,6 @@ android {
 dependencies {
     compileOnly fileTree(dir: 'extlibs', include: ['*.jar'])
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    testImplementation 'junit:junit:4.12'
-    implementation 'com.android.support:appcompat-v7:24.1.1'
+    implementation "androidx.appcompat:appcompat:1.6.1"
+    testImplementation 'junit:junit:4.13.2'
 }
