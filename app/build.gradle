@@ -1,6 +1,5 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
 // apply plugin: 'kotlin-kapt'
 
 android {
@@ -24,6 +23,11 @@ android {
 //            keyAlias keystoreProperties['PLATFORM_KEY_ALIAS']
 //            keyPassword keystoreProperties['PLATFORM_KEY_PASSWORD']
 //        }
+    }
+
+    compileOptions {
+        sourceCompatibility 1.8
+        targetCompatibility 1.8
     }
 
     defaultConfig {
@@ -70,8 +74,4 @@ dependencies {
 
     implementation "io.reactivex.rxjava2:rxjava:$rxjavaVersion"
     implementation "io.reactivex.rxjava2:rxandroid:$rxandroidVersion"
-}
-
-repositories {
-    mavenCentral()
 }
