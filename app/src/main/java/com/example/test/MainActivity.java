@@ -2,6 +2,7 @@ package com.example.test;
 
 
 import android.os.Bundle;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -14,8 +15,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        TextView tv = (TextView)findViewById(R.id.textview);
-        tv.setText(NativeUtils.getCString());
+        TextView tv = findViewById(R.id.textview);
+
+        Button btn = findViewById(R.id.btn1);
+        btn.setOnClickListener((v) -> {
+            tv.setText(NativeUtils.getCString());
+        });
     }
 
     @Override
