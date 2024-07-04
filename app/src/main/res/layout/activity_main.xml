@@ -4,15 +4,30 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.example.test.tasks.MainActivity">
+    tools:context="com.example.test.business.MainActivity">
 
-    <androidx.coordinatorlayout.widget.CoordinatorLayout
-        android:id="@+id/coordinatorLayout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-        <FrameLayout
-            android:id="@+id/contentFrame"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+    <Button
+        android:id="@+id/btnLaunch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="Launch" />
+
+    <Button
+        android:id="@+id/btnCustom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Launch with Custom Coors" />
+
+    <Button
+        android:id="@+id/btnMultipleOrigins"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Launch with Multiple Origins" />
+
+    <Button
+        android:id="@+id/btnReferrer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Provide data in the referrer" />
 </LinearLayout>
