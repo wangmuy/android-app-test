@@ -14,8 +14,20 @@
             android:id="@+id/exePyBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="exe python script" />
+            android:text="exe py static script" />
+
+        <Button
+            android:id="@+id/exePyDynBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="exe py dynamic script" />
     </LinearLayout>
+
+    <EditText
+        android:id="@+id/pyCodeEdit"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="print('helloPython from pyDynExe')" />
 
     <TextView
         android:id="@+id/content"
