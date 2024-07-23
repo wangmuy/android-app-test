@@ -62,6 +62,12 @@ android {
 chaquopy {
     defaultConfig {
         buildPython("D:/anaconda3/envs/py310/python.exe")
+        pip {
+//            options("--proxy", "http://127.0.0.1:1092")
+            install("numpy")
+            install("scipy")
+            install("pandas")
+        }
     }
 }
 

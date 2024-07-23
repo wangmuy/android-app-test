@@ -6,21 +6,60 @@
     android:orientation="vertical"
     tools:context="com.example.test.business.MainActivity">
 
+    <Button
+        android:id="@+id/exePyBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="exe_py_static" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
         <Button
-            android:id="@+id/exePyBtn"
+            android:id="@+id/numpyModuleBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="exe py static script" />
+            android:text="numpy_module" />
 
         <Button
-            android:id="@+id/exePyDynBtn"
+            android:id="@+id/scipyModuleBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="exe py dynamic script" />
+            android:text="scipy_module" />
+
+        <Button
+            android:id="@+id/pandasModuleBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="pandas_module" />
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/exePyDynBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="exe_py_dynamic" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <Button
+            android:id="@+id/numpyExampleBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="numpy_example" />
+        <Button
+            android:id="@+id/scipyExampleBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="scipy_example" />
+        <Button
+            android:id="@+id/pandasExampleBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="pandas_example" />
     </LinearLayout>
 
     <EditText
