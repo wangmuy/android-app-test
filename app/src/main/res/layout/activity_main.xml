@@ -6,4 +6,51 @@
     android:orientation="vertical"
     tools:context="com.example.test.business.MainActivity">
 
+    <Button
+        android:id="@+id/listSvcBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="list MediaBrowserServices"/>
+
+    <Spinner
+        android:id="@+id/svcListSpn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <Button
+        android:id="@+id/bindSvcBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="bind MediaBrowserService" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <Button
+            android:id="@+id/playPauseBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="play" />
+        <Button
+            android:id="@+id/prevBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="prev" />
+        <Button
+            android:id="@+id/nextBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="next" />
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="vertical"
+        android:fillViewport="true">
+        <TextView
+            android:id="@+id/contentTv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </ScrollView>
 </LinearLayout>
