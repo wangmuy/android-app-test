@@ -1,7 +1,9 @@
 package com.example.test.business
 
 import android.content.ComponentName
+import android.content.ContextWrapper
 import android.content.Intent
+import android.os.Binder
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
@@ -31,7 +33,7 @@ class MainActivity: AppCompatActivity() {
     private var mediaBrowser: MediaBrowserCompat? = null
     private val connectionCallback = object: MediaBrowserCompat.ConnectionCallback() {
         override fun onConnected() {
-            val msg = "onConnected, tid=${Thread.currentThread().id}"
+            val msg = "onConnected, tid=${Thread.currentThread().id}, callingPid=${Binder.getCallingPid()}"
             Log.d(TAG, msg)
             logContent(msg)
             try {
@@ -49,13 +51,13 @@ class MainActivity: AppCompatActivity() {
         }
 
         override fun onConnectionSuspended() {
-            val msg = "onConnectionSuspended, tid=${Thread.currentThread().id}"
+            val msg = "onConnectionSuspended, tid=${Thread.currentThread().id}, callingPid=${Binder.getCallingPid()}"
             Log.d(TAG, msg)
             logContent(msg)
         }
 
         override fun onConnectionFailed() {
-            val msg = "onConnectionFailed, tid=${Thread.currentThread().id}"
+            val msg = "onConnectionFailed, tid=${Thread.currentThread().id}, callingPid=${Binder.getCallingPid()}"
             Log.d(TAG, msg)
             logContent(msg)
             disconnectMediaBrowser()
@@ -63,19 +65,19 @@ class MainActivity: AppCompatActivity() {
     }
     private val controllerCallback = object: MediaControllerCompat.Callback() {
         override fun onMetadataChanged(metadata: MediaMetadataCompat?) {
-            val msg = "onMetadataChanged, tid=${Thread.currentThread().id}, metadata=${getMetaDataStr(metadata)}"
+            val msg = "onMetadataChanged, tid=${Thread.currentThread().id}, callingPid=${Binder.getCallingPid()}, metadata=${getMetaDataStr(metadata)}"
             Log.d(TAG, msg)
             logContent(msg)
         }
 
         override fun onPlaybackStateChanged(state: PlaybackStateCompat?) {
-            val msg = "onPlaybackStateChanged, tid=${Thread.currentThread().id}, state=$state"
+            val msg = "onPlaybackStateChanged, tid=${Thread.currentThread().id}, callingPid=${Binder.getCallingPid()}, state=$state"
             Log.d(TAG, msg)
             logContent(msg)
         }
 
         override fun onSessionDestroyed() {
-            val msg = "onSessionDestroyed, tid=${Thread.currentThread().id}"
+            val msg = "onSessionDestroyed, tid=${Thread.currentThread().id}, callingPid=${Binder.getCallingPid()}"
             Log.d(TAG, msg)
             logContent(msg)
             disconnectMediaBrowser()
@@ -151,9 +153,15 @@ class MainActivity: AppCompatActivity() {
         playPauseBtn.setText("play")
         try {
             synchronized(LOCK) {
-                mediaBrowser?.disconnect()
+                disconnectMediaBrowser()
                 val rootHints = Bundle().apply {
 //                    putBoolean("UCAR", true)
+                }
+                val ctx = object: ContextWrapper(this) {
+                    override fun getPackageName(): String {
+//                        return "whitelisted.app"
+                        return super.getPackageName()
+                    }
                 }
                 mediaBrowser = MediaBrowserCompat(this, component, connectionCallback, rootHints)
                 mediaBrowser?.connect()
@@ -167,13 +175,14 @@ class MainActivity: AppCompatActivity() {
         runOnUiThread{
             updateTransportControls(null)
         }
-        try {
-            val mediaController = MediaControllerCompat.getMediaController(this)
-            mediaController?.unregisterCallback(controllerCallback)
-        } catch (e: Exception) {
-            Log.e(TAG, "", e)
-        }
         synchronized(LOCK) {
+            try {
+                val mediaController = MediaControllerCompat.getMediaController(this)
+                mediaController?.unregisterCallback(controllerCallback)
+            } catch (e: Exception) {
+                Log.e(TAG, "", e)
+            }
+
             try {
                 mediaBrowser?.disconnect()
             } catch (e: Exception) {
@@ -207,6 +216,10 @@ class MainActivity: AppCompatActivity() {
             }
             val metadata = mediaController?.metadata
             val pbState = mediaController?.playbackState
+            when (pbState?.state) {
+                PlaybackStateCompat.STATE_PLAYING -> playPauseBtn.setText("pause")
+                else -> playPauseBtn.setText("play")
+            }
             val msg = "updateTransportControls metadata=${getMetaDataStr(metadata)}, pbState=$pbState"
             Log.d(TAG, msg)
             logContent(msg)
