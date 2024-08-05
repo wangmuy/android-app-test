@@ -5,6 +5,7 @@ import android.content.ContextWrapper
 import android.content.Intent
 import android.os.Binder
 import android.os.Bundle
+import android.provider.MediaStore
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaControllerCompat
@@ -12,6 +13,7 @@ import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
 import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.EditText
 import android.widget.Spinner
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -28,6 +30,8 @@ class MainActivity: AppCompatActivity() {
     private lateinit var playPauseBtn: Button
     private lateinit var prevBtn: Button
     private lateinit var nextBtn: Button
+    private lateinit var singerEdit: EditText
+    private lateinit var songEdit: EditText
 
     private val LOCK = Any()
     private var mediaBrowser: MediaBrowserCompat? = null
@@ -125,6 +129,28 @@ class MainActivity: AppCompatActivity() {
                 newConnectMediaBrowser(ComponentName.unflattenFromString(it))
             }
         }
+
+        singerEdit = findViewById(R.id.singerEdit)
+        songEdit = findViewById(R.id.songEdit)
+        findViewById<Button>(R.id.playFromSearchBtn).setOnClickListener{v->
+            val singer = singerEdit.text?.toString() ?: ""
+            val song = songEdit.text?.toString() ?: ""
+            val mediaController = MediaControllerCompat.getMediaController(this)
+            if (mediaController != null) {
+                val query = "play $song ${if (singer.isNotEmpty()) "from $singer" else ""}"
+                val extras = Bundle().apply {
+                    putString(MediaStore.EXTRA_MEDIA_FOCUS, "vnd.android.cursor.item/*")
+                    if (singer.isNotEmpty()) {
+                        putString(MediaStore.EXTRA_MEDIA_ARTIST, singer)
+                    }
+                    if (song.isNotEmpty()) {
+                        putString(MediaStore.EXTRA_MEDIA_TITLE, song)
+                    }
+                }
+                Log.d(TAG, "playFromSearch, query=$query, extras=$extras")
+                mediaController.transportControls.playFromSearch(query, extras)
+            }
+        }
     }
 
     override fun onDestroy() {
@@ -196,7 +222,7 @@ class MainActivity: AppCompatActivity() {
     private fun updateTransportControls(mediaController: MediaControllerCompat?) {
         try {
             playPauseBtn.setOnClickListener {v ->
-                if (mediaController == null) {
+                if (mediaController == null || mediaController.playbackState == null) {
                     return@setOnClickListener
                 }
                 val pbState = mediaController.playbackState.state

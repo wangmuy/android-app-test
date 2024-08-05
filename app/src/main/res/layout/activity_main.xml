@@ -43,6 +43,27 @@
             android:text="next" />
     </LinearLayout>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <EditText
+            android:id="@+id/singerEdit"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:hint="singer" />
+        <EditText
+            android:id="@+id/songEdit"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:hint="song" />
+        <Button
+            android:id="@+id/playFromSearchBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="playFromSearch" />
+    </LinearLayout>
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
