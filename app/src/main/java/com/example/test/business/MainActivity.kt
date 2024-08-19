@@ -86,6 +86,13 @@ class MainActivity: AppCompatActivity() {
             logContent(msg)
             disconnectMediaBrowser()
         }
+
+        override fun onSessionEvent(event: String?, extras: Bundle?) {
+            extras?.isEmpty
+            val msg = "onSessionEvent, tid=${Thread.currentThread().id}, callingPid=${Binder.getCallingPid()}, extras=$extras"
+            Log.d(TAG, msg)
+            logContent(msg)
+        }
     }
 
     private fun getMetaDataStr(metadata: MediaMetadataCompat?): String {
@@ -160,7 +167,8 @@ class MainActivity: AppCompatActivity() {
 
     private fun logContent(content: String) {
         contentTv.post{
-            contentTv.text = content
+            val text = contentTv.text.toString()
+            contentTv.text = String.format("%s%s", if (text.isBlank()) "" else text + "\n\n", content)
         }
     }
 
@@ -176,6 +184,7 @@ class MainActivity: AppCompatActivity() {
 
     private fun newConnectMediaBrowser(component: ComponentName) {
         Log.d(TAG, "newConnect: $component")
+        contentTv.text = ""
         playPauseBtn.setText("play")
         try {
             synchronized(LOCK) {
