@@ -3,6 +3,9 @@ package com.example.test.business
 import android.content.ComponentName
 import android.content.ContextWrapper
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Binder
 import android.os.Bundle
 import android.provider.MediaStore
@@ -14,16 +17,24 @@ import android.util.Log
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.Spinner
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.media.MediaBrowserServiceCompat
+import com.bumptech.glide.Glide
 import com.example.test.R
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
 
 class MainActivity: AppCompatActivity() {
     companion object {
         private const val TAG = "MainActivityTAG"
     }
+    private val coroutineScope = lifecycleScope // CoroutineScope(Dispatchers.Main)
     private lateinit var contentTv: TextView
     private lateinit var listSpinner: Spinner
 
@@ -32,6 +43,12 @@ class MainActivity: AppCompatActivity() {
     private lateinit var nextBtn: Button
     private lateinit var singerEdit: EditText
     private lateinit var songEdit: EditText
+
+    private lateinit var artImg: ImageView
+    private lateinit var titleTv: TextView
+    private lateinit var artistTv: TextView
+    private lateinit var subtitleTv: TextView
+    private lateinit var descTv: TextView
 
     private val LOCK = Any()
     private var mediaBrowser: MediaBrowserCompat? = null
@@ -72,6 +89,9 @@ class MainActivity: AppCompatActivity() {
             val msg = "onMetadataChanged, tid=${Thread.currentThread().id}, callingPid=${Binder.getCallingPid()}, metadata=${getMetaDataStr(metadata)}"
             Log.d(TAG, msg)
             logContent(msg)
+            if (metadata != null) {
+                updateMetadata(metadata)
+            }
         }
 
         override fun onPlaybackStateChanged(state: PlaybackStateCompat?) {
@@ -96,18 +116,6 @@ class MainActivity: AppCompatActivity() {
             Log.d(TAG, msg)
             logContent(msg)
         }
-    }
-
-    private fun getMetaDataStr(metadata: MediaMetadataCompat?): String {
-        if (metadata == null) {
-            return ""
-        }
-        val sb = StringBuilder()
-        sb.appendLine("description=${metadata.description}")
-        sb.appendLine("mediaMetadata=${metadata.mediaMetadata}")
-        sb.appendLine("bundle=${metadata.bundle}")
-        sb.appendLine("keySet=${metadata.keySet().joinToString(", ")}")
-        return sb.toString()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -161,6 +169,12 @@ class MainActivity: AppCompatActivity() {
                 mediaController.transportControls.playFromSearch(query, extras)
             }
         }
+
+        artImg = findViewById(R.id.artImg)
+        titleTv = findViewById(R.id.titleTv)
+        artistTv = findViewById(R.id.artistTv)
+        subtitleTv = findViewById(R.id.subtitleTv)
+        descTv = findViewById(R.id.descTv)
     }
 
     override fun onDestroy() {
@@ -241,6 +255,125 @@ class MainActivity: AppCompatActivity() {
         }
     }
 
+    private fun getMetaDataStr(metadata: MediaMetadataCompat?): String {
+        if (metadata == null) {
+            return ""
+        }
+        val sb = StringBuilder()
+        sb.appendLine("description=${metadata.description}")
+        sb.appendLine("mediaMetadata=${metadata.mediaMetadata}")
+        sb.appendLine("bundle=${metadata.bundle}")
+        sb.appendLine("keySet=${metadata.keySet().joinToString(", ")}")
+        return sb.toString()
+    }
+
+    private fun updateIconUrl(uri: String, iconView: ImageView) {
+        if (uri.startsWith("http://") || uri.startsWith("https://")) {
+            Glide.with(this).load(uri).into(iconView)
+        } else if (uri.startsWith("content://")) {
+            coroutineScope.launch {
+                val bitmap = withContext(Dispatchers.IO) {
+                    MediaStore.Images.Media.getBitmap(contentResolver, Uri.parse(uri))
+                }
+                iconView.setImageBitmap(bitmap)
+            }
+        } else {
+            // read uri as image file
+            coroutineScope.launch {
+                val imgFile = File(uri)
+                if (imgFile.exists()) {
+                    val bitmap = BitmapFactory.decodeFile(imgFile.absolutePath)
+                    iconView.setImageBitmap(bitmap)
+                } else {
+                    iconView.setImageResource(R.drawable.baseline_web_asset_off_24)
+                }
+            }
+        }
+    }
+
+    private fun updateIcon(metadata: MediaMetadataCompat) {
+        var bitmap: Bitmap? = null
+        bitmap = metadata.getBitmap(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON)
+        if (bitmap != null) {
+            artImg.setImageBitmap(bitmap)
+            return
+        }
+        var uri: String? = null
+        uri = metadata.getString(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON_URI)
+        if (!uri.isNullOrEmpty()) {
+            updateIconUrl(uri, artImg)
+            return
+        }
+        uri = metadata.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI)
+        if (!uri.isNullOrEmpty()) {
+            updateIconUrl(uri, artImg)
+            return
+        }
+        bitmap = metadata.getBitmap(MediaMetadataCompat.METADATA_KEY_ART)
+        if (bitmap != null) {
+            artImg.setImageBitmap(bitmap)
+            return
+        }
+        uri = metadata.getString(MediaMetadataCompat.METADATA_KEY_ART_URI)
+        if (!uri.isNullOrEmpty()) {
+            updateIconUrl(uri, artImg)
+            return
+        }
+        bitmap = metadata.getBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART)
+        if (bitmap != null) {
+            artImg.setImageBitmap(bitmap)
+            return
+        }
+        uri = metadata.getString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI)
+        if (!uri.isNullOrEmpty()) {
+            updateIconUrl(uri, artImg)
+            return
+        }
+        artImg.setImageResource(R.drawable.baseline_visibility_off_24)
+    }
+
+    private fun updateArtist(metadata: MediaMetadataCompat) {
+        var artist: String? = null
+        artist = metadata.getString(MediaMetadataCompat.METADATA_KEY_ARTIST)
+        if (!artist.isNullOrEmpty()) {
+            artistTv.text = artist
+            return
+        }
+        artist = metadata.getString(MediaMetadataCompat.METADATA_KEY_ALBUM_ARTIST)
+        if (!artist.isNullOrEmpty()) {
+            artistTv.text = artist
+            return
+        }
+        artistTv.text = ""
+    }
+
+    private fun updateTitle(metadata: MediaMetadataCompat) {
+        var title: String? = null
+        title = metadata.getString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE)
+        if (!title.isNullOrEmpty()) {
+            titleTv.text = title
+            return
+        }
+        title = metadata.getString(MediaMetadataCompat.METADATA_KEY_TITLE)
+        if (!title.isNullOrEmpty()) {
+            titleTv.text = title
+            return
+        }
+        titleTv.text = ""
+    }
+
+    private fun updateMetadata(metadata: MediaMetadataCompat) {
+        runOnUiThread {
+            updateIcon(metadata)
+            updateArtist(metadata)
+            updateTitle(metadata)
+            val subTitle = metadata.getString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE)
+            subtitleTv.text = if (subTitle.isNullOrEmpty()) "" else subTitle
+            val desc = metadata.getString(MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION)
+            descTv.text = if (desc.isNullOrEmpty()) "" else desc
+        }
+    }
+
     private fun updateTransportControls(mediaController: MediaControllerCompat?) {
         try {
             playPauseBtn.setOnClickListener {v ->
@@ -269,6 +402,9 @@ class MainActivity: AppCompatActivity() {
             val msg = "updateTransportControls metadata=${getMetaDataStr(metadata)}, pbState=$pbState"
             Log.d(TAG, msg)
             logContent(msg)
+            if (metadata != null) {
+                updateMetadata(metadata)
+            }
             mediaController?.registerCallback(controllerCallback)
         } catch (e: Exception) {
             Log.e(TAG, "", e)
