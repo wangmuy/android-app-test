@@ -78,6 +78,9 @@ class MainActivity: AppCompatActivity() {
             val msg = "onPlaybackStateChanged, tid=${Thread.currentThread().id}, callingPid=${Binder.getCallingPid()}, state=$state"
             Log.d(TAG, msg)
             logContent(msg)
+            if (state != null) {
+                updatePlaybackState(state)
+            }
         }
 
         override fun onSessionDestroyed() {
@@ -228,6 +231,16 @@ class MainActivity: AppCompatActivity() {
         }
     }
 
+    private fun updatePlaybackState(pbState: PlaybackStateCompat) {
+        runOnUiThread {
+            if (pbState.state == PlaybackStateCompat.STATE_PLAYING) {
+                playPauseBtn.setText("pause")
+            } else {
+                playPauseBtn.setText("play")
+            }
+        }
+    }
+
     private fun updateTransportControls(mediaController: MediaControllerCompat?) {
         try {
             playPauseBtn.setOnClickListener {v ->
@@ -237,11 +250,10 @@ class MainActivity: AppCompatActivity() {
                 val pbState = mediaController.playbackState.state
                 if (pbState == PlaybackStateCompat.STATE_PLAYING) {
                     mediaController.transportControls.pause()
-                    (v as Button).setText("play")
                 } else {
                     mediaController.transportControls.play()
-                    (v as Button).setText("pause")
                 }
+                updatePlaybackState(mediaController.playbackState)
             }
             prevBtn.setOnClickListener{v->
                 mediaController?.transportControls?.skipToPrevious()
@@ -251,9 +263,8 @@ class MainActivity: AppCompatActivity() {
             }
             val metadata = mediaController?.metadata
             val pbState = mediaController?.playbackState
-            when (pbState?.state) {
-                PlaybackStateCompat.STATE_PLAYING -> playPauseBtn.setText("pause")
-                else -> playPauseBtn.setText("play")
+            if (pbState != null) {
+                updatePlaybackState(pbState)
             }
             val msg = "updateTransportControls metadata=${getMetaDataStr(metadata)}, pbState=$pbState"
             Log.d(TAG, msg)
