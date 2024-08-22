@@ -6,6 +6,10 @@
     android:orientation="vertical"
     tools:context="com.example.test.tasks.MainActivity">
 
+    <TextView
+        android:id="@+id/appName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
     <Button
         android:id="@+id/shareSheetTextBtn"
         android:layout_width="wrap_content"

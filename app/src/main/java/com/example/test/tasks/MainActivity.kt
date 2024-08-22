@@ -25,6 +25,7 @@ class MainActivity: AppCompatActivity() {
 
     private val coroutine = lifecycleScope
 
+    private lateinit var appNameTv: TextView
     private lateinit var previewImg: ImageView
     private lateinit var contentTv: TextView
     private lateinit var shareSheetTextBtn: Button
@@ -34,6 +35,9 @@ class MainActivity: AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        appNameTv = findViewById<TextView>(R.id.appName).also {
+            it.text = getString(R.string.app_name)
+        }
         previewImg = findViewById(R.id.previewImg)
         contentTv = findViewById(R.id.contentTv)
         shareSheetTextBtn = findViewById<Button>(R.id.shareSheetTextBtn).also {
@@ -70,10 +74,9 @@ class MainActivity: AppCompatActivity() {
         if (uri != null) {
             var shareIntent = Intent().apply {
                 action = Intent.ACTION_SEND
-//                    val uri = Uri.parse("content://media/external/images/media/1000015334")
                 putExtra(Intent.EXTRA_STREAM, uri)
                 type = "image/jpg"
-                flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+//                flags = Intent.FLAG_GRANT_READ_URI_PERMISSION // irrelevant
             }
             shareIntent = Intent.createChooser(shareIntent, null)
             startActivity(shareIntent)
@@ -90,10 +93,12 @@ class MainActivity: AppCompatActivity() {
                     if ("text/plain" == intent.type) {
                         contentTv.text = intent.getStringExtra(Intent.EXTRA_TEXT)
                     } else if (intent.type?.startsWith("image/") == true) {
-                        (intent.getParcelableExtra<Parcelable>(Intent.EXTRA_STREAM) as? Uri)?.let {
+                        (intent.getParcelableExtra<Parcelable>(Intent.EXTRA_STREAM) as? Uri)?.let {uri->
                             coroutine.launch {
                                 val bitmap = withContext(Dispatchers.IO) {
-                                    MediaStore.Images.Media.getBitmap(contentResolver, it)
+                                    // if specified, no permission
+//                                    val uri = Uri.parse("content://media/external/images/media/1000015334")
+                                    MediaStore.Images.Media.getBitmap(contentResolver, uri)
                                 }
                                 previewImg.setImageBitmap(bitmap)
                             }
