@@ -10,6 +10,6 @@ class FuncCallAnnoProvider: SymbolProcessorProvider {
     }
     override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
         Log.d(TAG, "create")
-        return LogProcessor(environment.options, environment.logger, environment.codeGenerator)
+        return FuncCallProcessor(environment.options, environment.logger, environment.codeGenerator)
     }
 }

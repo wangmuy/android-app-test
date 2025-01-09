@@ -3,9 +3,6 @@
 buildscript {
     ext.kotlinVersion = '2.1.0'
     ext.kspVersion = '2.1.0-1.0.29'
-//    dependencies {
-//        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.0'
-//    }
 }
 
 allprojects {
@@ -21,8 +18,9 @@ task clean(type: Delete) {
 
 ext {
     minSdkVersion = 18
-    targetSdkVersion = 28
-    compileSdkVersion = 28
+    targetSdkVersion = 30
+    compileSdkVersion = 30
+    javaCompatVersion = JavaVersion.VERSION_11
 
     androidXVersion = '1.0.0'
 

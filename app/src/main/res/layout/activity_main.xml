@@ -10,5 +10,24 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+        <Button
+            android:id="@+id/clearlog"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="clear log" />
+        <Button
+            android:id="@+id/func1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="call func1" />
+        <Button
+            android:id="@+id/func2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="call func2" />
+        <TextView
+            android:id="@+id/log"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
     </LinearLayout>
 </LinearLayout>
