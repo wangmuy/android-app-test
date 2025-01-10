@@ -17,7 +17,7 @@ object MyFuncCall {
     const val CALL_1 = "myCall1"
     const val CALL_2 = "myCall2"
 
-    @SkillDef(operationId = CALL_1, description = "this is my function call", versionCode = 1)
+    @SkillDef(serviceId = "com.example.test", operationId = CALL_1, description = "this is my function call", versionCode = 1)
     fun myCall1(
         @SkillParam(name="param1", description = "param1", required = true) param1: String,
         @SkillCallbackParam callback: ISkillCallback?,
@@ -34,7 +34,7 @@ object MyFuncCall {
         return ret
     }
 
-    @SkillDef(operationId = CALL_2, description = "this myCall2", versionCode = 1)
+    @SkillDef(serviceId = "com.example.test", operationId = CALL_2, description = "this myCall2", versionCode = 1)
     fun myCall2(
         @SkillParam(name="param1", description = "param1", required = true) param1: String,
         @SkillParam(name="param2", description = "param2", required = false) param2: String?,

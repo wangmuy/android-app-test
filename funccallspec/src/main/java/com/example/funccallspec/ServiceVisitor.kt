@@ -20,6 +20,7 @@ class ServiceVisitor(
   return ${it.value.callStr}
 }
             """.trimIndent() }.toList()
+
             val content = """
 package $packageName
 import android.app.Service
@@ -116,6 +117,19 @@ ${dispatchBlocks.joinToString("\n")}
     override fun onStartCommand(p0: Intent?, p1: Int, p2: Int): Int {
         return START_NOT_STICKY
     }
+}
+            """.trimIndent()
+            file.write(content.toByteArray())
+        }
+
+        val path = processor.options["generatedResourceDir"] ?: "funcCallSchemas.json"
+        processor.codeGenerator.createNewFileByPath(dependencies, path, extensionName = "").use {file->
+            val funcBlocks = processor.dispatches.map { it.value.schemaStr }
+            val content = """
+{
+  "functions": [
+${funcBlocks.joinToString(",\n")}
+  ]
 }
             """.trimIndent()
             file.write(content.toByteArray())
