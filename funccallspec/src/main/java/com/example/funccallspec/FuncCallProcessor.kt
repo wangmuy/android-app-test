@@ -1,7 +1,7 @@
 package com.example.funccallspec
 
-import com.example.funccallspec.annotations.SkillDef
-import com.example.funccallspec.annotations.SkillService
+import com.example.funccallanno.SkillDef
+import com.example.funccallanno.SkillService
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.processing.Resolver

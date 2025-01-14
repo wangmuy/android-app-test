@@ -10,4 +10,5 @@ java {
 
 dependencies {
     implementation "com.google.devtools.ksp:symbol-processing-api:$kspVersion"
+    implementation project(':funccallanno')
 }

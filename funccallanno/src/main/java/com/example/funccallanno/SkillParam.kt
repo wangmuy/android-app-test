@@ -1,4 +1,4 @@
-package com.example.funccallspec.annotations
+package com.example.funccallanno
 
 @Target(AnnotationTarget.VALUE_PARAMETER)
 @Retention(AnnotationRetention.SOURCE)

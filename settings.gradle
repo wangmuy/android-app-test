@@ -9,3 +9,4 @@ pluginManagement {
 include ':app'
 include ':funccallspec'
 include ':mysdk'
+include ':funccallanno'

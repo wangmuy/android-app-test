@@ -1,7 +1,7 @@
 package com.example.test.biz1
 
-import com.example.funccallspec.annotations.SkillService
+import com.example.funccallanno.SkillService
 
-@SkillService
+@com.example.funccallanno.SkillService
 interface IMyService {
 }

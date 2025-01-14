@@ -1,5 +1,5 @@
 plugins {
-    id 'com.android.application' version '7.3.1'
+    id 'com.android.application' version "$agpVersion"
     id 'org.jetbrains.kotlin.android' version "$kotlinVersion"
     id 'com.google.devtools.ksp' version "$kspVersion"
 }
@@ -82,7 +82,6 @@ dependencies {
     implementation "io.reactivex.rxjava2:rxjava:$rxjavaVersion"
     implementation "io.reactivex.rxjava2:rxandroid:$rxandroidVersion"
     implementation project(':mysdk')
-    implementation project(':funccallspec')
+    implementation project(':funccallanno')
     ksp project(':funccallspec')
-
 }
