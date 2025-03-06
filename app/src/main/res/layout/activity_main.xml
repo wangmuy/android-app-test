@@ -6,9 +6,32 @@
     android:orientation="vertical"
     tools:context="com.example.test.biz1.MainActivity">
 
-    <LinearLayout
-        android:orientation="vertical"
+    <Button
+        android:id="@+id/pi_act"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="pi activity" />
+
+    <Button
+        android:id="@+id/pi_fg_svc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="pi foreground service" />
+
+    <Button
+        android:id="@+id/pi_bg_svc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="pi background service" />
+
+    <Button
+        android:id="@+id/pi_bc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="pi broadcast" />
+
+    <TextView
+        android:id="@+id/log_tv"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-    </LinearLayout>
+        android:layout_height="wrap_content" />
 </LinearLayout>

@@ -2,16 +2,36 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.test">
 
-    <!--
-    <uses-permission android:name="android.permission.SET_PREFERRED_APPLICATIONS"/>
-    -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
         android:allowBackup="false"
         android:label="@string/app_name"
         android:supportsRtl="false"
         android:theme="@style/AppTheme">
-        <activity android:name="com.example.test.biz1.MainActivity">
+
+        <receiver
+            android:name=".biz1.MyReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.example.test.BROADCAST" />
+            </intent-filter>
+        </receiver>
+
+        <service
+            android:name=".biz1.MyForegroundService"
+            android:enabled="true"
+            android:exported="true" />
+        <service
+            android:name=".biz1.MyBackgroundService"
+            android:enabled="true"
+            android:exported="true" />
+
+        <activity
+            android:name=".biz1.TestActivity"
+            android:exported="false" />
+        <activity android:name=".biz1.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
