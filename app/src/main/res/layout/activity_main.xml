@@ -10,5 +10,15 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+        <Button
+            android:id="@+id/envBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="check google app functions env" />
+
+        <TextView
+            android:id="@+id/logTv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
     </LinearLayout>
 </LinearLayout>
