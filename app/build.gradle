@@ -1,9 +1,10 @@
 plugins {
-    id 'com.android.application' version '7.3.1'
+    id 'com.android.application' version '8.4.2'
     id 'org.jetbrains.kotlin.android' version "$kotlinVersion"
 }
 
 android {
+    namespace "com.example.test"
     compileSdkVersion rootProject.ext.compileSdkVersion
 
     signingConfigs {
@@ -28,7 +29,7 @@ android {
 
     compileOptions {
         sourceCompatibility 1.8
-        targetCompatibility 1.8
+        targetCompatibility 17
     }
 
     defaultConfig {

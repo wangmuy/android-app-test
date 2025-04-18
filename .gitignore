@@ -8,3 +8,4 @@
 /gradle.properties
 keystore.properties
 GitCredentialManager/
+.kotlin/
