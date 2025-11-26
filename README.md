@@ -1,1 +1,1 @@
-empty template for Android Studio
+empty template for Android project. See CLAUDE.md for coding agent assisted development documentation.

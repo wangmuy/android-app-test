@@ -1,0 +1,31 @@
+{
+  "hooks": {
+    "UserPromptSubmit": ["skill-activation-prompt"],
+    "PostToolUse": ["post-tool-use-tracker"]
+  },
+  "permissions": {
+    "allow": ["Skill(skill-developer)"],
+    "deny": [],
+    "ask": []
+  },
+  "project": {
+    "type": "android",
+    "backend": "none",
+    "framework": "Android (Kotlin + Jetpack Compose, MVVM)",
+    "specs": {
+      "language": "Kotlin",
+      "ui_framework": "Jetpack Compose",
+      "architecture": "MVVM with Clean Architecture",
+      "libraries": ["Retrofit", "Room", "Coroutines & Flow", "Koin"],
+      "min_sdk": 30,
+      "target_sdk": 34,
+      "compile_sdk": 34,
+      "testing": "JUnit",
+      "build_tool": "Gradle Kotlin DSL",
+      "networking": true,
+      "database": "Room",
+      "dependency_injection": "Koin",
+      "design_system": "Material 3"
+    }
+  }
+}
