@@ -1,6 +1,6 @@
 # Dev Docs Pattern
 
-A methodology for maintaining project context across Claude Code sessions and context resets.
+A methodology for maintaining project context across AI coding agent sessions and context resets.
 
 ---
 
@@ -13,7 +13,7 @@ A methodology for maintaining project context across Claude Code sessions and co
 - Technical constraints
 - Why certain approaches were chosen
 
-**After a reset, Claude has to rediscover everything.**
+**After a reset, the AI coding agent has to rediscover everything.**
 
 ---
 
@@ -28,7 +28,18 @@ dev/active/[task-name]/
 └── [task-name]-tasks.md     # Checklist format
 ```
 
-**These files survive context resets** - Claude reads them to get back up to speed instantly.
+**These files survive context resets** - AI coding agents read them to get back up to speed instantly.
+
+---
+
+## Claude Code Integration
+
+Some features in this guide are **Claude Code specific** and require Claude Code to function:
+- `/dev-docs` slash command for automatic generation
+- `/dev-docs-update` for automatic updates
+- Built-in integration with Claude's specialized agents
+
+**For other AI coding agents:** All methodologies and file structures work the same way, but you'll need to create files manually using natural language prompts.
 
 ---
 
@@ -194,12 +205,16 @@ To continue:
 
 ### Starting a New Task
 
-1. **Use /dev-docs slash command:**
+1. **For Claude Code - Use /dev-docs slash command:**
    ```
    /dev-docs refactor authentication system
    ```
 
-2. **Claude creates the three files:**
+   **For other AI coding agents - Create manually:**
+   - Create directory: `mkdir -p dev/active/refactor-authentication-system`
+   - Create the three files manually (plan.md, context.md, tasks.md)
+
+2. **AI coding agent creates the three files:**
    - Analyzes requirements
    - Examines codebase
    - Creates comprehensive plan
@@ -221,7 +236,7 @@ To continue:
 
 ### After Context Reset
 
-1. **Claude reads all three files**
+1. **AI coding agent reads all three files**
 2. **Understands complete state** in seconds
 3. **Resumes exactly where you left off**
 
@@ -229,9 +244,9 @@ No need to explain what you were doing - it's all documented!
 
 ---
 
-## Integration with Slash Commands
+## Integration with AI Coding Agents
 
-### /dev-docs
+### /dev-docs (Claude Code Only)
 **Creates:** New dev docs for a task
 
 **Usage:**
@@ -245,7 +260,7 @@ No need to explain what you were doing - it's all documented!
   - implement-real-time-notifications-context.md
   - implement-real-time-notifications-tasks.md
 
-### /dev-docs-update
+### /dev-docs-update (Claude Code Only)
 **Updates:** Existing dev docs before context reset
 
 **Usage:**
@@ -260,6 +275,11 @@ No need to explain what you were doing - it's all documented!
 - Captures current state
 
 **Use when:** Approaching context limits or ending session
+
+### For Other AI Coding Agents
+- Create dev docs manually using the three-file structure
+- Use natural language prompts to generate the plan, context, and tasks files
+- Regularly update the context and tasks files as you work
 
 ---
 
@@ -332,24 +352,27 @@ If scope changes:
 
 ---
 
-## For Claude Code
+## For AI Coding Agents
 
 **When user asks to create dev docs:**
 
-1. **Use the /dev-docs slash command** if available
-2. **Or create manually:**
+1. **For Claude Code - Use /dev-docs slash command:**
+   - Use `/dev-docs task-name` to automatically generate all three files
+   - Claude will analyze requirements and create comprehensive documentation
+
+   **For other AI coding agents - Create manually:**
    - Ask about the task scope
    - Analyze relevant codebase files
    - Create comprehensive plan
-   - Generate context and tasks
+   - Generate context and tasks files
 
-3. **Structure the plan with:**
+2. **Structure the plan with:**
    - Clear phases
    - Actionable tasks
    - Acceptance criteria
    - Risk assessment
 
-4. **Make context file resumable:**
+3. **Make context file resumable:**
    - SESSION PROGRESS at top
    - Quick resume instructions
    - Key files list with explanations
@@ -370,7 +393,11 @@ If scope changes:
 
 ## Creating Dev Docs Manually
 
-If you don't have the /dev-docs command:
+### For Claude Code - Use Automation:
+- Use `/dev-docs task-name` slash command to automatically generate all three files
+- Claude will analyze the codebase and create comprehensive documentation
+
+### For Other AI Coding Agents or Manual Creation:
 
 **1. Create directory:**
 ```bash
@@ -417,8 +444,9 @@ mkdir -p dev/active/your-task-name
 ## Next Steps
 
 1. **Try the pattern** on your next complex task
-2. **Use /dev-docs** slash command (if available)
+2. **For Claude Code:** Use `/dev-docs` slash command (if available)
+   **For other AI coding agents:** Create dev docs manually
 3. **Update frequently** - especially context.md
 4. **See it in action** - Browse dev/active/public-infrastructure-repo/
 
-**Questions?** See [CLAUDE_INTEGRATION_GUIDE.md](../CLAUDE_INTEGRATION_GUIDE.md)
+**Questions?** See your AI coding agent documentation for integration options.

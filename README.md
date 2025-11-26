@@ -1,1 +1,1 @@
-empty template for Android project. See CLAUDE.md for coding agent assisted development documentation.
+empty template for Android project. See CLAUDE.md or AGENTS.md for coding agent assisted development documentation.

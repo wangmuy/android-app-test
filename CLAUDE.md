@@ -1,8 +1,6 @@
 # Android Kotlin AI Coding Agents Setup - Complete
 
-This directory contains a **self-contained AI coding agent assisted setup** for Android development. Works with Claude Code, Gemini CLI, Cline, RooCode, and other AI coding assistants.
-
-**Copy this entire directory to your project to get started!**
+This file is a **self-contained AI coding agent assisted setup** for Android development. Works with Claude Code, Gemini CLI, Cline, RooCode, and other AI coding assistants.
 
 **Tech Stack:**
 - **Language:** Kotlin with Coroutines & Flow
@@ -10,14 +8,13 @@ This directory contains a **self-contained AI coding agent assisted setup** for 
 - **Architecture:** MVVM with Clean Architecture
 - **Libraries:** Retrofit, Room, Koin
 - **Persistence:** Room Database (SQLite)
-- **Min SDK:** 30, **Target SDK:** 34
 - **Backend:** None (Client-only - API calls via Retrofit)
 
 ---
 
 ## 📦 What's Included
 
-### 📘 COMPATIBILITY.md - Start Here!
+### 📘 CODING_AGENT_COMPATIBILITY.md - Start Here!
 
 **New!** Explains how this setup works with multiple AI coding agents:
 - ✅ **All agents:** Tech guide, architecture patterns, code examples
@@ -72,16 +69,17 @@ Claude Code configuration with your Android project specifications.
 ### Structure
 
 ```
-├── CLAUDE.md            # This file - your main documentation
-├── SETUP.md             # Quick setup verification
-├── README.md            # Redirects to CLAUDE.md
-├── .claude/             # Claude Code configuration
-│   ├── agents/          # 11 specialized AI agents
-│   ├── hooks/           # skill-activation-prompt, post-tool-use-tracker
-│   ├── skills/          # skill-developer (meta-skill)
-│   └── settings.json    # Your custom Android configuration
+├── CLAUDE.md                        # This file - your main documentation
+├── SETUP.md                         # Quick setup verification
+├── CODING_AGENT_COMPATIBILITY.md    # AI Coding agent general compatibility guide
+├── README.md                        # Project readme. Redirects to CLAUDE.md
+├── .claude/                         # Claude Code configuration
+│   ├── agents/                      # 11 specialized AI agents
+│   ├── hooks/                       # skill-activation-prompt, post-tool-use-tracker
+│   ├── skills/                      # skill-developer (meta-skill)
+│   └── settings.json                # Your custom Android configuration
 └── dev/
-    ├── README.md        # Dev docs methodology
+    ├── README.md                    # Dev docs methodology
     └── android/
         └── ANDROID_KOTLIN_GUIDE.md  # Complete tech stack guide
 ```
@@ -90,22 +88,14 @@ Claude Code configuration with your Android project specifications.
 
 ## 🚀 Quick Start
 
-### 1. Copy to Your Android Project
-
-Since this directory is **self-contained**, simply copy it to your project:
-
-```bash
-cp -r * ~/path/to/your/android-project/
-```
-
-### 2. Make Hooks Executable
+### 1. Make Hooks Executable
 
 ```bash
 cd ~/path/to/your/android-project
 chmod +x .claude/hooks/*.sh
 ```
 
-### 3. Verify Setup
+### 2. Verify Setup
 
 1. Open your Android project in Android Studio
 2. Check that `.claude/settings.json` exists
@@ -116,7 +106,7 @@ chmod +x .claude/hooks/*.sh
 Help me create a basic ViewModel with StateFlow
 ```
 
-### 4. Read the Guide
+### 3. Read the Guide
 
 Open `dev/android/ANDROID_KOTLIN_GUIDE.md` for complete reference.
 

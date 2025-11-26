@@ -13,15 +13,16 @@ Verify your AI coding agent assisted Android development environment is properly
 Your project should have:
 
 ```bash
-✓ .claude/agents/              # 11 agent files
-✓ .claude/hooks/               # 2 hooks
-✓ .claude/skills/              # skill-developer
-✓ .claude/settings.json        # Android configuration (client-only)
+✓ .claude/agents/                # 11 agent files
+✓ .claude/hooks/                 # 2 hooks
+✓ .claude/skills/                # skill-developer
+✓ .claude/settings.json          # Android configuration (client-only)
 ✓ dev/android/
-  └─ ANDROID_KOTLIN_GUIDE.md   # Complete tech patterns
-✓ dev/README.md                # Dev docs methodology
-✓ CLAUDE.md                    # Main documentation
-✓ SETUP.md                     # This file
+  └─ ANDROID_KOTLIN_GUIDE.md     # Complete tech patterns
+✓ dev/README.md                  # Dev docs methodology
+✓ CLAUDE.md                      # Main documentation
+✓ CODING_AGENT_COMPATIBILITY.md  # AI Coding agent general compatibility guide
+✓ SETUP.md                       # This file
 ```
 
 ### 2. Verify Hooks Are Executable
@@ -360,7 +361,7 @@ If your setup changes, update `.claude/settings.json`:
 ### Primary Documentation
 
 - **Start Here:** `dev/android/ANDROID_KOTLIN_GUIDE.md` - Complete reference
-- **Overview:** `CLAUDE.md` - Main documentation
+- **Overview:** `CLAUDE.md` - Main documentation, `CODING_AGENT_COMPATIBILITY.md` - AI Coding agent general compatibility guide
 - **Dev Docs:** `dev/README.md` - Documentation patterns
 
 ### Agent Documentation
@@ -383,7 +384,7 @@ If your setup changes, update `.claude/settings.json`:
 
 **Required (All AI Agents):**
 - [ ] `dev/android/ANDROID_KOTLIN_GUIDE.md` available
-- [ ] `CLAUDE.md` and `SETUP.md` present
+- [ ] `CLAUDE.md` and `CODING_AGENT_COMPATIBILITY.md` and `SETUP.md` present
 - [ ] `dev/android/ANDROID_KOTLIN_GUIDE.md` is readable
 
 **Claude Code Specific (Optional):**
@@ -427,7 +428,7 @@ If using Claude Code and having issues with agents/hooks:
    ```
 
 **Resources:**
-- **All agents:** `CLAUDE.md` - Full documentation
+- **All agents:** `CLAUDE.md` - Full documentation, `CODING_AGENT_COMPATIBILITY.md` - AI Coding agent general compatibility guide
 - **This guide:** `SETUP.md` - Verification steps
 - **Claude Code agents:** `.claude/agents/README.md`
 - **Claude Code troubleshooting:** `.claude/skills/skill-developer/TROUBLESHOOTING.md`

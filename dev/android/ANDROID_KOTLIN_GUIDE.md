@@ -120,13 +120,13 @@ Sources (API, Database)
 #### Entity
 
 ```kotlin
-@Entity(tableName = "users")
-data class UserEntity(
+@Entity(tableName = "items")
+data class ItemEntity(
     @PrimaryKey
     val id: String,
     val name: String,
-    val email: String,
-    val avatarUrl: String?,
+    val description: String,
+    val imageUrl: String?,
     @ColumnInfo(name = "created_at")
     val createdAt: Long = System.currentTimeMillis()
 )
@@ -136,27 +136,27 @@ data class UserEntity(
 
 ```kotlin
 @Dao
-interface UserDao {
-    @Query("SELECT * FROM users")
-    fun getAllUsers(): Flow<List<UserEntity>>
+interface ItemDao {
+    @Query("SELECT * FROM items")
+    fun getAllItems(): Flow<List<ItemEntity>>
 
-    @Query("SELECT * FROM users WHERE id = :userId")
-    fun getUserById(userId: String): Flow<UserEntity?>
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertUsers(users: List<UserEntity>)
+    @Query("SELECT * FROM items WHERE id = :itemId")
+    fun getItemById(itemId: String): Flow<ItemEntity?>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertUser(user: UserEntity)
+    suspend fun insertItems(items: List<ItemEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertItem(item: ItemEntity)
 
     @Update
-    suspend fun updateUser(user: UserEntity)
+    suspend fun updateItem(item: ItemEntity)
 
     @Delete
-    suspend fun deleteUser(user: UserEntity)
+    suspend fun deleteItem(item: ItemEntity)
 
-    @Query("DELETE FROM users")
-    suspend fun deleteAllUsers()
+    @Query("DELETE FROM items")
+    suspend fun deleteAllItems()
 }
 ```
 
@@ -164,12 +164,12 @@ interface UserDao {
 
 ```kotlin
 @Database(
-    entities = [UserEntity::class],
+    entities = [ItemEntity::class],
     version = 1,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
-    abstract fun userDao(): UserDao
+    abstract fun itemDao(): ItemDao
 
     companion object {
         const val DATABASE_NAME = "app_database"
@@ -182,33 +182,33 @@ abstract class AppDatabase : RoomDatabase() {
 #### API Model
 
 ```kotlin
-data class UserApiModel(
+data class ItemApiModel(
     val id: String,
     val name: String,
-    val email: String,
-    @SerializedName("avatar_url")
-    val avatarUrl: String?
+    val description: String,
+    @SerializedName("image_url")
+    val imageUrl: String?
 )
 ```
 
 #### API Service
 
 ```kotlin
-interface UserApiService {
-    @GET("users")
-    suspend fun getUsers(): List<UserApiModel>
+interface ItemApiService {
+    @GET("items")
+    suspend fun getItems(): List<ItemApiModel>
 
-    @GET("users/{id}")
-    suspend fun getUser(@Path("id") userId: String): UserApiModel
+    @GET("items/{id}")
+    suspend fun getItem(@Path("id") itemId: String): ItemApiModel
 
-    @POST("users")
-    suspend fun createUser(@Body user: UserApiModel): UserApiModel
+    @POST("items")
+    suspend fun createItem(@Body item: ItemApiModel): ItemApiModel
 
-    @PUT("users/{id}")
-    suspend fun updateUser(@Path("id") userId: String, @Body user: UserApiModel): UserApiModel
+    @PUT("items/{id}")
+    suspend fun updateItem(@Path("id") itemId: String, @Body item: ItemApiModel): ItemApiModel
 
-    @DELETE("users/{id}")
-    suspend fun deleteUser(@Path("id") userId: String)
+    @DELETE("items/{id}")
+    suspend fun deleteItem(@Path("id") itemId: String)
 }
 ```
 
@@ -244,8 +244,8 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideUserApiService(retrofit: Retrofit): UserApiService {
-        return retrofit.create(UserApiService::class.java)
+    fun provideItemApiService(retrofit: Retrofit): ItemApiService {
+        return retrofit.create(ItemApiService::class.java)
     }
 }
 ```
@@ -257,25 +257,25 @@ object NetworkModule {
 ### Repository Interface
 
 ```kotlin
-interface UserRepository {
-    fun getUsers(): Flow<Result<List<User>>>
-    fun getUser(userId: String): Flow<Result<User?>>
-    suspend fun refreshUsers()
-    suspend fun updateUser(user: User): Result<Unit>
+interface ItemRepository {
+    fun getItems(): Flow<Result<List<Item>>>
+    fun getItem(itemId: String): Flow<Result<Item?>>
+    suspend fun refreshItems()
+    suspend fun updateItem(item: Item): Result<Unit>
 }
 ```
 
 ### Repository Implementation
 
 ```kotlin
-class UserRepositoryImpl(
-    private val apiService: UserApiService,
-    private val userDao: UserDao
-) : UserRepository {
+class ItemRepositoryImpl(
+    private val apiService: ItemApiService,
+    private val itemDao: ItemDao
+) : ItemRepository {
 
-    override fun getUsers(): Flow<Result<List<User>>> = flow {
+    override fun getItems(): Flow<Result<List<Item>>> = flow {
         // First emit cached data
-        userDao.getAllUsers().collect { entities ->
+        itemDao.getAllItems().collect { entities ->
             if (entities.isNotEmpty()) {
                 emit(Result.Success(entities.map { it.toDomainModel() }))
             }
@@ -283,46 +283,46 @@ class UserRepositoryImpl(
 
         // Then refresh from network
         try {
-            val apiUsers = apiService.getUsers()
-            val entities = apiUsers.map { it.toEntity() }
-            userDao.insertUsers(entities)
+            val apiItems = apiService.getItems()
+            val entities = apiItems.map { it.toEntity() }
+            itemDao.insertItems(entities)
             emit(Result.Success(entities.map { it.toDomainModel() }))
         } catch (e: Exception) {
             emit(Result.Error(e))
         }
     }.flowOn(Dispatchers.IO)
 
-    override fun getUser(userId: String): Flow<Result<User?>> = flow {
-        userDao.getUserById(userId).collect { entity ->
+    override fun getItem(itemId: String): Flow<Result<Item?>> = flow {
+        itemDao.getItemById(itemId).collect { entity ->
             emit(Result.Success(entity?.toDomainModel()))
         }
 
         try {
-            val apiUser = apiService.getUser(userId)
-            val entity = apiUser.toEntity()
-            userDao.insertUser(entity)
+            val apiItem = apiService.getItem(itemId)
+            val entity = apiItem.toEntity()
+            itemDao.insertItem(entity)
             emit(Result.Success(entity.toDomainModel()))
         } catch (e: Exception) {
             emit(Result.Error(e))
         }
     }.flowOn(Dispatchers.IO)
 
-    override suspend fun refreshUsers() {
+    override suspend fun refreshItems() {
         try {
-            val apiUsers = apiService.getUsers()
-            val entities = apiUsers.map { it.toEntity() }
-            userDao.insertUsers(entities)
+            val apiItems = apiService.getItems()
+            val entities = apiItems.map { it.toEntity() }
+            itemDao.insertItems(entities)
         } catch (e: Exception) {
             // Log error but don't crash
             e.printStackTrace()
         }
     }
 
-    override suspend fun updateUser(user: User): Result<Unit> {
+    override suspend fun updateItem(item: Item): Result<Unit> {
         return try {
-            val apiModel = user.toApiModel()
-            apiService.updateUser(user.id, apiModel)
-            userDao.updateUser(user.toEntity())
+            val apiModel = item.toApiModel()
+            apiService.updateItem(item.id, apiModel)
+            itemDao.updateItem(item.toEntity())
             Result.Success(Unit)
         } catch (e: Exception) {
             Result.Error(e)
@@ -335,27 +335,27 @@ class UserRepositoryImpl(
 
 ```kotlin
 // Entity to Domain
-fun UserEntity.toDomainModel(): User = User(
+fun ItemEntity.toDomainModel(): Item = Item(
     id = id,
     name = name,
-    email = email,
-    avatarUrl = avatarUrl
+    description = description,
+    imageUrl = imageUrl
 )
 
 // API Model to Entity
-fun UserApiModel.toEntity(): UserEntity = UserEntity(
+fun ItemApiModel.toEntity(): ItemEntity = ItemEntity(
     id = id,
     name = name,
-    email = email,
-    avatarUrl = avatarUrl
+    description = description,
+    imageUrl = imageUrl
 )
 
 // Domain to API Model
-fun User.toApiModel(): UserApiModel = UserApiModel(
+fun Item.toApiModel(): ItemApiModel = ItemApiModel(
     id = id,
     name = name,
-    email = email,
-    avatarUrl = avatarUrl
+    description = description,
+    imageUrl = imageUrl
 )
 ```
 
@@ -368,10 +368,10 @@ fun User.toApiModel(): UserApiModel = UserApiModel(
 #### UI State
 
 ```kotlin
-sealed interface UsersUiState {
-    data object Loading : UsersUiState
-    data class Success(val users: List<User>) : UsersUiState
-    data class Error(val message: String) : UsersUiState
+sealed interface ItemsUiState {
+    data object Loading : ItemsUiState
+    data class Success(val items: List<Item>) : ItemsUiState
+    data class Error(val message: String) : ItemsUiState
 
     val isLoading: Boolean
         get() = this is Loading
@@ -387,36 +387,36 @@ sealed interface UsersUiState {
 #### ViewModel
 
 ```kotlin
-class UsersViewModel(
-    private val userRepository: UserRepository
+class ItemsViewModel(
+    private val itemRepository: ItemRepository
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<UsersUiState>(UsersUiState.Loading)
-    val uiState: StateFlow<UsersUiState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow<ItemsUiState>(ItemsUiState.Loading)
+    val uiState: StateFlow<ItemsUiState> = _uiState.asStateFlow()
 
-    private val _uiEffect = MutableSharedFlow<UsersUiEffect>()
-    val uiEffect: SharedFlow<UsersUiEffect> = _uiEffect.asSharedFlow()
+    private val _uiEffect = MutableSharedFlow<ItemsUiEffect>()
+    val uiEffect: SharedFlow<ItemsUiEffect> = _uiEffect.asSharedFlow()
 
     init {
-        loadUsers()
+        loadItems()
     }
 
-    fun loadUsers() {
+    fun loadItems() {
         viewModelScope.launch {
-            _uiState.value = UsersUiState.Loading
+            _uiState.value = ItemsUiState.Loading
 
-            userRepository.getUsers()
+            itemRepository.getItems()
                 .onEach { result ->
                     when (result) {
                         is Result.Success -> {
                             if (result.data.isEmpty()) {
-                                _uiState.value = UsersUiState.Error("No users found")
+                                _uiState.value = ItemsUiState.Error("No items found")
                             } else {
-                                _uiState.value = UsersUiState.Success(result.data)
+                                _uiState.value = ItemsUiState.Success(result.data)
                             }
                         }
                         is Result.Error -> {
-                            _uiState.value = UsersUiState.Error(
+                            _uiState.value = ItemsUiState.Error(
                                 result.exception.message ?: "Unknown error"
                             )
                         }
@@ -426,15 +426,15 @@ class UsersViewModel(
         }
     }
 
-    fun onUserClick(user: User) {
+    fun onItemClick(item: Item) {
         viewModelScope.launch {
-            _uiEffect.emit(UsersUiEffect.NavigateToUserDetail(user.id))
+            _uiEffect.emit(ItemsUiEffect.NavigateToItemDetail(item.id))
         }
     }
 
-    fun refreshUsers() {
+    fun refreshItems() {
         viewModelScope.launch {
-            userRepository.refreshUsers()
+            itemRepository.refreshItems()
         }
     }
 }
@@ -443,9 +443,9 @@ class UsersViewModel(
 #### UI Effect
 
 ```kotlin
-sealed interface UsersUiEffect {
-    data class NavigateToUserDetail(val userId: String) : UsersUiEffect
-    data class ShowToast(val message: String) : UsersUiEffect
+sealed interface ItemsUiEffect {
+    data class NavigateToItemDetail(val itemId: String) : ItemsUiEffect
+    data class ShowToast(val message: String) : ItemsUiEffect
 }
 ```
 
@@ -476,9 +476,9 @@ sealed class Result<out T> {
 
 ```kotlin
 @Composable
-fun UsersScreen(
-    viewModel: UsersViewModel = koinViewModel(),
-    onUserClick: (String) -> Unit
+fun ItemsScreen(
+    viewModel: ItemsViewModel = koinViewModel(),
+    onItemClick: (String) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -487,20 +487,20 @@ fun UsersScreen(
     LaunchedEffect(Unit) {
         viewModel.uiEffect.collect { effect ->
             when (effect) {
-                is UsersUiEffect.NavigateToUserDetail -> {
-                    onUserClick(effect.userId)
+                is ItemsUiEffect.NavigateToItemDetail -> {
+                    onItemClick(effect.itemId)
                 }
-                is UsersUiEffect.ShowToast -> {
+                is ItemsUiEffect.ShowToast -> {
                     Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
                 }
             }
         }
     }
 
-    UsersContent(
+    ItemsContent(
         uiState = uiState,
-        onRefresh = { viewModel.refreshUsers() },
-        onUserClick = { user -> viewModel.onUserClick(user) }
+        onRefresh = { viewModel.refreshItems() },
+        onItemClick = { item -> viewModel.onItemClick(item) }
     )
 }
 
@@ -510,15 +510,15 @@ fun UsersScreen(
 
 ```kotlin
 @Composable
-fun UsersContent(
-    uiState: UsersUiState,
+fun ItemsContent(
+    uiState: ItemsUiState,
     onRefresh: () -> Unit,
-    onUserClick: (User) -> Unit
+    onItemClick: (Item) -> Unit
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Users") },
+                title = { Text("Items") },
                 actions = {
                     IconButton(onClick = onRefresh) {
                         Icon(
@@ -536,24 +536,24 @@ fun UsersContent(
                 .padding(paddingValues)
         ) {
             when (uiState) {
-                is UsersUiState.Loading -> {
+                is ItemsUiState.Loading -> {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
-                is UsersUiState.Success -> {
+                is ItemsUiState.Success -> {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize()
                     ) {
-                        items(uiState.users) { user ->
-                            UserItem(
-                                user = user,
-                                onClick = { onUserClick(user) }
+                        items(uiState.items) { item ->
+                            ItemItem(
+                                item = item,
+                                onClick = { onItemClick(item) }
                             )
                         }
                     }
                 }
-                is UsersUiState.Error -> {
+                is ItemsUiState.Error -> {
                     ErrorState(
                         message = uiState.message,
                         onRetry = onRefresh
@@ -565,12 +565,12 @@ fun UsersContent(
 }
 ```
 
-### User Item
+### Item Item
 
 ```kotlin
 @Composable
-fun UserItem(
-    user: User,
+fun ItemItem(
+    item: Item,
     onClick: () -> Unit
 ) {
     Card(
@@ -586,26 +586,26 @@ fun UserItem(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // User avatar
+            // Item image
             AsyncImage(
-                model = user.avatarUrl,
-                contentDescription = "${user.name} avatar",
+                model = item.imageUrl,
+                contentDescription = "${item.name} image",
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape),
-                placeholder = painterResource(R.drawable.ic_user_placeholder)
+                placeholder = painterResource(R.drawable.ic_item_placeholder)
             )
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            // User info
+            // Item info
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = user.name,
+                    text = item.name,
                     style = MaterialTheme.typography.titleMedium
                 )
                 Text(
-                    text = user.email,
+                    text = item.description,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -692,7 +692,7 @@ val databaseModule = module {
         ).build()
     }
 
-    single { get<AppDatabase>().userDao() }
+    single { get<AppDatabase>().itemDao() }
 }
 ```
 
@@ -719,7 +719,7 @@ val networkModule = module {
             .build()
     }
 
-    single { get<Retrofit>().create(UserApiService::class.java) }
+    single { get<Retrofit>().create(ItemApiService::class.java) }
 }
 ```
 
@@ -727,7 +727,7 @@ val networkModule = module {
 
 ```kotlin
 val repositoryModule = module {
-    single<UserRepository> { UserRepositoryImpl(get(), get()) }
+    single<ItemRepository> { ItemRepositoryImpl(get(), get()) }
 }
 ```
 
@@ -735,8 +735,8 @@ val repositoryModule = module {
 
 ```kotlin
 val viewModelModule = module {
-    viewModel { UsersViewModel(get()) }
-    viewModel { (userId: String) -> UserDetailViewModel(userId, get()) }
+    viewModel { ItemsViewModel(get()) }
+    viewModel { (itemId: String) -> ItemDetailViewModel(itemId, get()) }
 }
 ```
 
@@ -850,25 +850,25 @@ suspend fun <T> safeApiCall(apiCall: suspend () -> T): Result<T> {
 ### Unit Testing ViewModel
 
 ```kotlin
-class UsersViewModelTest {
+class ItemsViewModelTest {
 
     @Test
-    fun `loadUsers emits loading then success`() = runTest {
+    fun `loadItems emits loading then success`() = runTest {
         // Given
-        val fakeUsers = listOf(User("1", "John", "john@example.com"))
-        val repository = FakeUserRepository(fakeUsers)
-        val viewModel = UsersViewModel(repository)
+        val fakeItems = listOf(Item("1", "Item Name", "Item Description", null))
+        val repository = FakeItemRepository(fakeItems)
+        val viewModel = ItemsViewModel(repository)
 
         // When
-        viewModel.loadUsers()
+        viewModel.loadItems()
 
         // Then
-        assertEquals(UsersUiState.Loading, viewModel.uiState.value)
+        assertEquals(ItemsUiState.Loading, viewModel.uiState.value)
 
         advanceUntilIdle()
 
         assertEquals(
-            UsersUiState.Success(fakeUsers),
+            ItemsUiState.Success(fakeItems),
             viewModel.uiState.value
         )
     }
@@ -878,7 +878,7 @@ class UsersViewModelTest {
 ### UI Testing
 
 ```kotlin
-class UsersScreenTest {
+class ItemsScreenTest {
 
     @get:Rule
     val composeTestRule = createComposeRule()
@@ -886,10 +886,10 @@ class UsersScreenTest {
     @Test
     fun loading_showsProgressIndicator() {
         composeTestRule.setContent {
-            UsersContent(
-                uiState = UsersUiState.Loading,
+            ItemsContent(
+                uiState = ItemsUiState.Loading,
                 onRefresh = {},
-                onUserClick = {}
+                onItemClick = {}
             )
         }
 
@@ -903,51 +903,47 @@ class UsersScreenTest {
 
 ## 📁 Project Structure
 
+### Modified Architecture with Common and Business-Specific Directories
+
+The project follows a modified architecture where common components are separated from business-specific components:
+
 ```
 app/src/main/
-├── java/com/example/app/
+├── java/com/example/test/
 │   ├── App.kt
-│   ├── MainActivity.kt
-│   ├── data/
-│   │   ├── api/
-│   │   │   ├── ApiService.kt
+│   ├── common/
+│   │   ├── data/
+│   │   │   ├── api/
+│   │   │   │   └── [API models, services, interceptors]
+│   │   │   ├── local/
+│   │   │   │   ├── database/
+│   │   │   │   │   └── AppDatabase.kt
+│   │   │   │   ├── dao/
+│   │   │   │   │   └── [DAO interfaces]
+│   │   │   │   └── entity/
+│   │   │   │       └── [Room entities]
+│   │   │   └── repository/
+│   │   │       └── [Common repository interfaces and implementations]
+│   │   ├── domain/
 │   │   │   └── model/
-│   │   │       ├── UserApiModel.kt
-│   │   │       └── mapping/
-│   │   │           └── UserMapping.kt
-│   │   ├── local/
-│   │   │   ├── database/
-│   │   │   │   └── AppDatabase.kt
-│   │   │   ├── dao/
-│   │   │   │   └── UserDao.kt
-│   │   │   └── entity/
-│   │   │       └── UserEntity.kt
-│   │   └── repository/
-│   │       ├── UserRepository.kt
-│   │       └── UserRepositoryImpl.kt
+│   │   │       └── [Common domain models]
+│   │   └── ui/
+│   │       └── theme/
+│   │           └── [Common UI themes and styling]
+│   ├── mainbiz/
+│   │   ├── MainActivity.kt
+│   │   └── presentation/
+│   │       └── [Main business screen ViewModels and UI state]
+│   ├── [otherbiz]/
+│   │   └── presentation/
+│   │       └── [Other business screen components]
 │   ├── di/
 │   │   ├── DatabaseModule.kt
 │   │   ├── NetworkModule.kt
-│   │   └── RepositoryModule.kt
-│   ├── domain/
-│   │   └── model/
-│   │       └── User.kt
-│   ├── ui/
-│   │   ├── screens/
-│   │   │   └── users/
-│   │   │       ├── UsersScreen.kt
-│   │   │       ├── UsersViewModel.kt
-│   │   │       └── components/
-│   │   │           ├── UserItem.kt
-│   │   │           └── ErrorState.kt
-│   │   ├── theme/
-│   │   │   ├── Color.kt
-│   │   │   ├── Theme.kt
-│   │   │   └── Type.kt
-│   │   └── components/
-│   │       └── common/
+│   │   ├── RepositoryModule.kt
+│   │   └── ViewModelModule.kt
 │   └── util/
-│       └── Result.kt
+│       └── [Common utilities]
 └── res/
     ├── drawable/
     ├── values/
@@ -956,6 +952,36 @@ app/src/main/
     │   └── themes.xml
     └── mipmap/
 ```
+
+### Architecture Decisions
+
+1. **Common Directory (`common/`)**:
+   - Contains shared components used across multiple business modules
+   - Includes common data models, API services, local storage, domain models, and UI themes
+   - Promotes code reuse and consistency
+
+2. **Business-Specific Directories (`mainbiz/`, `[otherbiz]/`)**:
+   - Main screen related components (activities, presentations) in `mainbiz/`
+   - Other business modules in separate directories following the same pattern
+   - Each business module contains its own activities, ViewModels, UI components, and specific data/models
+
+3. **Separation of Concerns**:
+   - Common components are isolated for cross-module use
+   - Business-specific logic and UI are encapsulated in their respective modules
+   - Clear boundaries between shared and specific functionality
+
+4. **Scalability**:
+   - New business features can be added as separate directories
+   - Common components can be evolved independently
+   - Team collaboration is facilitated by clear module boundaries
+
+### Benefits of This Architecture
+
+- **Maintainability**: Clear separation between common and business-specific code
+- **Reusability**: Common components are easily accessible across modules
+- **Team Development**: Different teams can work on different business modules
+- **Testing**: Each module can be tested independently
+- **Performance**: Only relevant modules are loaded for specific features
 
 ---
 
