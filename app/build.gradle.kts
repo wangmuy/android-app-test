@@ -9,8 +9,8 @@ android {
 
     defaultConfig {
         applicationId = "com.example.test"
-        minSdk = 30
-        targetSdk = 34
+        minSdk = 28
+        targetSdk = 28 // 29 above will get "permission denied" if the script is run directly. use "sh appfunc" to execute via shell
         versionCode = 1
         versionName = "1.0"
 

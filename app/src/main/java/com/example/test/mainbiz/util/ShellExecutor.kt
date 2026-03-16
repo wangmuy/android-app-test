@@ -7,6 +7,7 @@ import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 
 class ShellExecutor(
+    private val scriptDir: String,
     private val onOutput: (String) -> Unit,
     private val onError: (String) -> Unit,
     private val onCommandDone: (Int) -> Unit
@@ -20,9 +21,13 @@ class ShellExecutor(
 
     fun startShell(): Boolean {
         return try {
-            process = ProcessBuilder("sh")
+            val processBuilder = ProcessBuilder("sh")
                 .redirectErrorStream(false)
-                .start()
+            
+            val env = processBuilder.environment()
+            env["PATH"] = "$scriptDir:${env["PATH"]}"
+            
+            process = processBuilder.start()
 
             stdoutReader = BufferedReader(InputStreamReader(process!!.inputStream))
             stderrReader = BufferedReader(InputStreamReader(process!!.errorStream))

@@ -1,0 +1,24 @@
+#!/system/bin/sh
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+SOCKET_PATH="$SCRIPT_DIR/unix_socket_bridge.sock"
+REQUEST="$1"
+
+if [ -z "$REQUEST" ]; then
+    echo "Usage: $0 <request>" >&2
+    echo "socketPath: $SOCKET_PATH"
+    exit 1
+fi
+
+RESPONSE=$(echo "$REQUEST" | nc -U "$SOCKET_PATH")
+
+if [ -z "$RESPONSE" ]; then
+    echo "No response from server" >&2
+    exit 1
+fi
+
+RETURN_CODE=$(echo "$RESPONSE" | head -n1)
+BODY=$(echo "$RESPONSE" | tail -n +2)
+
+echo "$BODY"
+exit "$RETURN_CODE"
