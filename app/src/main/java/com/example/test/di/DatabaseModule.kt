@@ -1,8 +1,8 @@
 package com.example.test.di
 
 import androidx.room.Room
-import org.koin.dsl.module
 import com.example.test.common.data.local.database.AppDatabase
+import org.koin.dsl.module
 
 val databaseModule = module {
     single {
@@ -13,5 +13,5 @@ val databaseModule = module {
         ).build()
     }
 
-    single { get<AppDatabase>().itemDao() }
+//    single { get<AppDatabase>().itemDao() }
 }
