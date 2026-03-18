@@ -6,8 +6,10 @@ import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.File
 import java.io.FileOutputStream
+import java.io.IOException
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
+
 
 class ShellExecutor(
     private val context: Context,
@@ -33,6 +35,29 @@ class ShellExecutor(
     private val prootTmpDir: File
         get() = File(context.filesDir, PROOT_TMP_DIR)
 
+    fun getBootClassPath(): String {
+        val pb = ProcessBuilder("sh", "-c", "echo \$BOOTCLASSPATH")
+
+        var process: Process? = null
+        try {
+            process = pb.start()
+            BufferedReader(InputStreamReader(process.getInputStream(), "UTF-8")).use { reader ->
+                val line = reader.readLine()
+                val exitCode = process.waitFor()
+                onError("BOOTCLASSPATH=$line")
+                if (exitCode == 0 && line != null && !line.isEmpty()) {
+                    return line
+                }
+            }
+        } catch (e: Exception) {
+            onError("error: ${e.stackTraceToString()}")
+        } finally {
+            process?.destroy()
+        }
+        return ""
+    }
+
+
     fun startShell(): Boolean {
         return try {
             onError("Starting shell with bind mounts: $bindMounts")
@@ -51,9 +76,10 @@ class ShellExecutor(
                 .redirectErrorStream(false)
 
             val env = processBuilder.environment()
-            env["PATH"] = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+            env["PATH"] = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/system/bin"
             env["HOME"] = "/root"
             env["PROOT_TMP_DIR"] = prootTmpPath
+            env["BOOTCLASSPATH"] = getBootClassPath()
             env.remove("LD_PRELOAD")
 
             /**
@@ -81,6 +107,8 @@ class ShellExecutor(
                 "-w", "/root",
                 "-b", "/dev",
                 "-b", "/proc",
+                "-b", "/system",
+                "-b", "/apex",
                 "-b", "/sys"
             )
             bindMounts.forEach { mount ->
