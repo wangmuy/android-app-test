@@ -12,6 +12,7 @@ import java.io.OutputStreamWriter
 class ShellExecutor(
     private val context: Context,
     private val scriptDir: String,
+    private val bindMounts: List<String> = emptyList(),
     private val onOutput: (String) -> Unit,
     private val onError: (String) -> Unit,
     private val onCommandDone: (Int) -> Unit
@@ -34,12 +35,17 @@ class ShellExecutor(
 
     fun startShell(): Boolean {
         return try {
+            onError("Starting shell with bind mounts: $bindMounts")
+
             extractProot()
             extractAlpineRootfs()
             ensureProotTmpDir()
 
             val alpinePath = alpineDir.absolutePath
             val prootTmpPath = prootTmpDir.absolutePath
+
+            onError("Alpine path: $alpinePath")
+            onError("Proot tmp path: $prootTmpPath")
 
             val processBuilder = ProcessBuilder()
                 .redirectErrorStream(false)
@@ -67,7 +73,7 @@ class ShellExecutor(
              * 3. Install links from INSIDE the protected PRoot session
              * `/bin/busybox --install -s /bin`
              */
-            processBuilder.command(
+            val commandList = mutableListOf(
                 prootFile.absolutePath,
                 "--link2symlink",
                 "-r", alpinePath,
@@ -75,13 +81,23 @@ class ShellExecutor(
                 "-w", "/root",
                 "-b", "/dev",
                 "-b", "/proc",
-                "-b", "/sys",
-//                "-v","9",
-                "/bin/busybox", "sh"
+                "-b", "/sys"
             )
+            bindMounts.forEach { mount ->
+                commandList.add("-b")
+                commandList.add(mount)
+            }
+            commandList.add("/bin/busybox")
+            commandList.add("sh")
+
+            onError("Proot command: ${commandList.joinToString(" ")}")
+
+            processBuilder.command(commandList)
             processBuilder.directory(context.filesDir)
 
             process = processBuilder.start()
+
+            onError("Shell process started successfully")
 
             stdoutReader = BufferedReader(InputStreamReader(process!!.inputStream))
             stderrReader = BufferedReader(InputStreamReader(process!!.errorStream))
@@ -103,6 +119,7 @@ class ShellExecutor(
                         }
                     }
                 } catch (e: Exception) {
+                    onError("stdout thread error: ${e.message}")
                 }
             }
 
@@ -113,6 +130,7 @@ class ShellExecutor(
                         line?.let { onError(it) }
                     }
                 } catch (e: Exception) {
+                    onError("stderr thread error: ${e.message}")
                 }
             }
 

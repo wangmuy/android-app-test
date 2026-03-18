@@ -33,7 +33,7 @@ class MainViewModel(
     private var shellExecutor: ShellExecutor? = null
     private var socketServer: UnixSocketServer? = null
 
-    fun startShell() {
+    fun startShell(bindMounts: List<String> = emptyList()) {
         viewModelScope.launch(Dispatchers.IO) {
             context?.let { ctx ->
                 socketServer = UnixSocketServer(
@@ -54,6 +54,7 @@ class MainViewModel(
                 shellExecutor = ShellExecutor(
                     ctx,
                     scriptDir,
+                    bindMounts,
                     onOutput = { output ->
                         viewModelScope.launch {
                             _shellOutput.value += output + "\n"
