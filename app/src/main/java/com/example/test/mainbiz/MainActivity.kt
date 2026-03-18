@@ -133,12 +133,15 @@ fun MainView(viewModel: MainViewModel = koinViewModel()) {
                 .weight(1f),
             color = MaterialTheme.colorScheme.surfaceVariant
         ) {
-            Text(
-                text = shellOutput,
+            OutlinedTextField(
+                value = shellOutput,
+                onValueChange = {},
+                readOnly = true,
                 modifier = Modifier
+                    .fillMaxWidth()
                     .padding(8.dp)
                     .verticalScroll(rememberScrollState()),
-                style = MaterialTheme.typography.bodySmall
+                textStyle = MaterialTheme.typography.bodySmall
             )
         }
     }

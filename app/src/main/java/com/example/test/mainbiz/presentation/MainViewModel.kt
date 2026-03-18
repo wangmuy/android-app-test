@@ -52,6 +52,7 @@ class MainViewModel(
 
                 val scriptDir = ctx.filesDir.absolutePath
                 shellExecutor = ShellExecutor(
+                    ctx,
                     scriptDir,
                     onOutput = { output ->
                         viewModelScope.launch {

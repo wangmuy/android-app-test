@@ -85,6 +85,9 @@ dependencies {
     // Gson
     implementation(libs.gson)
 
+    // Apache Commons Compress
+    implementation(libs.commons.compress)
+
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.ext.junit)
