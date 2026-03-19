@@ -65,6 +65,7 @@ class ShellExecutor(
             onError("Starting shell with bind mounts: $bindMounts")
 
             extractProot()
+            // alpine use 3.13.12, since 3.14+ introduced system calls that are fundamentally incompatible with PRoot on many Android devices
             extractTarAndModifyPermission(ALPINE_ROOTFS_NAME, alpineDir,
                 mapOf(
                     File(alpineDir, "bin") to "rwx------",
