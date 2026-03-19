@@ -36,32 +36,5 @@ object TarExtractor {
                 }
             }
         }
-
-        setExecutablePermissions(destDir)
-    }
-
-    private fun setExecutablePermissions(destDir: File) {
-        val binDir = File(destDir, "bin")
-        val sbinDir = File(destDir, "sbin")
-        val libDir = File(destDir, "lib")
-
-        setExecutableRecursive(binDir)
-        setExecutableRecursive(sbinDir)
-        setExecutableRecursive(libDir)
-    }
-
-    private fun setExecutableRecursive(dir: File?) {
-        if (dir == null || !dir.exists()) return
-
-        dir.listFiles()?.forEach { file ->
-            if (file.isDirectory) {
-                file.setExecutable(true)
-                setExecutableRecursive(file)
-            } else {
-                file.setExecutable(true)
-                file.setReadable(true)
-                file.setWritable(true)
-            }
-        }
     }
 }

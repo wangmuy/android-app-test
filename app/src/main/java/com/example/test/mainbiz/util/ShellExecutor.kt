@@ -6,7 +6,6 @@ import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.File
 import java.io.FileOutputStream
-import java.io.IOException
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 
@@ -34,6 +33,9 @@ class ShellExecutor(
 
     private val prootTmpDir: File
         get() = File(context.filesDir, PROOT_TMP_DIR)
+
+    private val extraMountsDir: File
+        get() = File(context.filesDir, EXTRA_MOUNTS_DIR)
 
     fun getBootClassPath(): String {
         val pb = ProcessBuilder("sh", "-c", "echo \$BOOTCLASSPATH")
@@ -63,8 +65,14 @@ class ShellExecutor(
             onError("Starting shell with bind mounts: $bindMounts")
 
             extractProot()
-            extractAlpineRootfs()
+            extractTarAndModifyPermission(ALPINE_ROOTFS_NAME, alpineDir,
+                mapOf(
+                    File(alpineDir, "bin") to "rwx------",
+                    File(alpineDir, "sbin") to "rwx------",
+                    File(alpineDir, "lib") to "rwx------",
+                ))
             ensureProotTmpDir()
+            extractTarAndModifyPermission(EXTRA_MOUNTS_NAME, extraMountsDir)
 
             val alpinePath = alpineDir.absolutePath
             val prootTmpPath = prootTmpDir.absolutePath
@@ -79,6 +87,7 @@ class ShellExecutor(
             env["PATH"] = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/system/bin"
             env["HOME"] = "/root"
             env["PROOT_TMP_DIR"] = prootTmpPath
+//            env["PROOT_NO_SECCOMP"] = "1"
             env["BOOTCLASSPATH"] = getBootClassPath()
             env.remove("LD_PRELOAD")
 
@@ -107,13 +116,19 @@ class ShellExecutor(
                 "-w", "/root",
                 "-b", "/dev",
                 "-b", "/proc",
+                "-b", "/sys",
                 "-b", "/system",
                 "-b", "/apex",
-                "-b", "/sys"
             )
             bindMounts.forEach { mount ->
                 commandList.add("-b")
                 commandList.add(mount)
+            }
+            EXTRA_MOUNTS.forEach { mount ->
+                if (File(extraMountsDir, mount.split(":")[0]).exists()) {
+                    commandList.add("-b")
+                    commandList.add("${extraMountsDir.absolutePath}/$mount")
+                }
             }
             commandList.add("/bin/busybox")
             commandList.add("sh")
@@ -209,6 +224,7 @@ class ShellExecutor(
                         }
                     }
                 } catch (e: Exception) {
+                    onError("Failed to read stdout: ${e.message}")
                 }
             }
 
@@ -219,6 +235,7 @@ class ShellExecutor(
                         line?.let { onError(it) }
                     }
                 } catch (e: Exception) {
+                    onError("Failed to read stderr: ${e.message}")
                 }
             }
 
@@ -250,18 +267,22 @@ class ShellExecutor(
         }
     }
 
-    private fun extractAlpineRootfs() {
-        if (!alpineDir.exists() || alpineDir.listFiles()?.isEmpty() != false) {
-            if (!alpineDir.exists()) {
-                alpineDir.mkdirs()
+    private fun extractTarAndModifyPermission(tarName: String, destDir: File, filePermissions: Map<File, String> = emptyMap()) {
+        if (!destDir.exists() || destDir.listFiles()?.isEmpty() != false) {
+            if (!destDir.exists()) {
+                destDir.mkdirs()
             }
             try {
-                context.assets.open(ALPINE_ROOTFS_NAME).use { input ->
-                    TarExtractor.extract(input, alpineDir)
+                context.assets.open(tarName).use { input ->
+                    TarExtractor.extract(input, destDir)
+                    onError("extract ok: $tarName")
+                    filePermissions.forEach { entry ->
+                        FilePermissionUtil.setPermissions(entry.key, entry.value)
+                    }
                 }
             } catch (e: Exception) {
-                onError("Failed to extract Alpine rootfs: ${e.message}. stack: ${e.stackTraceToString()}")
-                alpineDir.delete()
+                onError("Failed to extractAndModifyPermission: $tarName, ${e.message}. stack: ${e.stackTraceToString()}")
+                destDir.delete()
             }
         }
     }
@@ -308,5 +329,8 @@ class ShellExecutor(
         private const val ALPINE_ROOTFS_NAME = "alpinetargz"
         private const val ALPINE_DIR = "alpine"
         private const val PROOT_TMP_DIR = "proot_tmp"
+        private const val EXTRA_MOUNTS_NAME = "extramountstargz"
+        private const val EXTRA_MOUNTS_DIR = "extramounts"
+        private val EXTRA_MOUNTS = arrayOf("linkerconfig:/linkerconfig", "resolv.conf:/etc/resolv.conf")
     }
 }
